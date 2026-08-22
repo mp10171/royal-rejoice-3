@@ -1,0 +1,1613 @@
+<!doctype html>
+<html lang="gu">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Royal Rejoice-3">
+<title>Royal Rejoice-3</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="icon" href="icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Karla:wght@400;500;700&family=Courier+Prime:wght@400;700&family=Noto+Sans+Gujarati:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F7F6F2; --paper-2:#FFFFFF; --ink:#333B4D; --ink-soft:#818899;
+  --rule:#E6E4DC; --stamp:#8A4C7D; --paid:#2F7D57; --due:#C24A38; --water:#2A7D91;
+  --shadow:0 1px 2px rgba(51,59,77,.05);
+  --tabh:64px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{background:var(--paper);color:var(--ink);
+  font-family:'Karla','Noto Sans Gujarati',system-ui,sans-serif;font-size:15px;line-height:1.5;
+  padding-bottom:calc(var(--tabh) + env(safe-area-inset-bottom));overscroll-behavior-y:none}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+
+.board{position:sticky;top:0;z-index:40;background:var(--paper-2);color:var(--ink);
+  padding:calc(11px + env(safe-area-inset-top)) 16px 11px;border-bottom:1px solid var(--rule);
+  border-top:3px solid var(--stamp)}
+.board .mark{font-family:'Oswald',sans-serif;font-weight:500;text-transform:uppercase;
+  letter-spacing:.18em;font-size:10.5px;color:var(--stamp)}
+.board .soc{font-family:'Oswald',sans-serif;font-weight:600;font-size:22px;line-height:1.15;
+  margin-top:1px;letter-spacing:.03em;text-transform:uppercase;color:var(--ink)}
+.board .sub{font-family:'Noto Sans Gujarati',sans-serif;font-size:11.5px;color:var(--ink-soft);margin-top:4px}
+
+main{padding:16px 14px 26px;max-width:660px;margin:0 auto}
+.eyebrow{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.18em;font-size:11px;
+  color:var(--stamp);font-weight:500;display:flex;align-items:center;gap:8px;margin:22px 0 9px}
+.eyebrow:first-child{margin-top:2px}
+.eyebrow::after{content:"";flex:1;height:1px;background:var(--rule)}
+.card{background:var(--paper-2);border:1px solid var(--rule);border-radius:3px;box-shadow:var(--shadow);padding:14px}
+
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{background:var(--paper-2);border:1px solid var(--rule);border-radius:3px;padding:12px 13px;box-shadow:var(--shadow)}
+.stat b{display:block;font-family:'Courier Prime',monospace;font-weight:700;font-size:22px;line-height:1.15}
+.stat span{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:3px}
+.stat.due b{color:var(--due)} .stat.paid b{color:var(--paid)} .stat.water b{color:var(--water)}
+
+.row{display:flex;align-items:center;gap:11px;padding:11px 0;border-bottom:1px solid var(--rule)}
+.row:last-child{border-bottom:0}
+.row .title{font-weight:700;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row .meta{font-size:12px;color:var(--ink-soft);margin-top:1px}
+.row .grow{flex:1;min-width:0}
+.row .amt{font-family:'Courier Prime',monospace;font-weight:700;font-size:15px;white-space:nowrap}
+.tag{font-family:'Oswald',sans-serif;font-size:10px;letter-spacing:.12em;text-transform:uppercase;
+  border:1px solid currentColor;border-radius:2px;padding:2px 6px;white-space:nowrap}
+.t-due{color:var(--due)} .t-paid{color:var(--paid)} .t-open{color:var(--stamp)}
+.chip{width:48px;height:38px;flex:0 0 48px;border-radius:3px;display:grid;place-items:center;
+  background:var(--paper);color:var(--ink);border:1px solid var(--rule);
+  font-family:'Oswald',sans-serif;font-size:12px;letter-spacing:.03em}
+
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;background:var(--ink);
+  color:var(--paper-2);border-radius:3px;padding:12px 16px;font-weight:700;font-size:14px;text-align:center}
+.btn:active{transform:translateY(1px)}
+.btn.ghost{background:transparent;color:var(--ink);border:1px solid var(--rule)}
+.btn.stamp{background:var(--stamp)} .btn.danger{background:var(--due)} .btn.water{background:var(--water)}
+.btn.sm{padding:8px 12px;font-size:12.5px}
+.btn.full{width:100%}
+.btnrow{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.btnrow .btn{flex:1}
+
+label{display:block;margin-top:12px}
+label .lb{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.13em;font-size:10.5px;color:var(--ink-soft)}
+input,select,textarea{width:100%;margin-top:5px;background:transparent;border:0;border-bottom:1.5px solid var(--rule);padding:8px 2px;border-radius:0}
+textarea{resize:vertical;min-height:74px;border:1.5px solid var(--rule);padding:8px;border-radius:3px}
+input:focus,select:focus,textarea:focus{outline:0;border-bottom-color:var(--stamp)}
+input:focus-visible,button:focus-visible,select:focus-visible{outline:2px solid var(--stamp);outline-offset:2px}
+select{-webkit-appearance:none;appearance:none;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='10' height='6'><path d='M0 0l5 6 5-6z' fill='%235C6478'/></svg>") right 4px center/10px no-repeat}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.search{margin:10px 0 0;border:1px solid var(--rule);border-radius:3px;padding:10px 12px;background:var(--paper-2)}
+
+.empty{text-align:center;padding:28px 16px;color:var(--ink-soft)}
+.empty h3{font-family:'Oswald',sans-serif;letter-spacing:.06em;color:var(--ink);margin:0 0 6px;font-size:16px;text-transform:uppercase}
+.empty p{margin:0 0 14px;font-size:13.5px}
+
+.slip{background:var(--paper-2);border:1px solid var(--rule);border-radius:2px;padding:14px;position:relative;box-shadow:var(--shadow);margin-top:12px}
+.slip::before{content:"";position:absolute;top:-6px;left:50%;transform:translateX(-50%);width:12px;height:12px;border-radius:50%;background:var(--stamp);box-shadow:0 2px 3px rgba(24,35,56,.35)}
+.slip h4{margin:4px 0 5px;font-size:15.5px}
+.slip p{margin:0;font-size:14px;white-space:pre-wrap}
+.slip .date{font-family:'Courier Prime',monospace;font-size:11.5px;color:var(--ink-soft);margin-top:9px}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;z-index:50;display:grid;grid-template-columns:repeat(5,1fr);
+  background:var(--paper-2);border-top:1px solid var(--rule);padding-bottom:env(safe-area-inset-bottom)}
+.tabs button{padding:9px 2px 8px;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--ink-soft);font-size:10.5px;position:relative}
+.tabs button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7}
+.tabs button[aria-current="page"]{color:var(--ink);font-weight:700}
+.tabs button[aria-current="page"]::before{content:"";position:absolute;top:0;left:50%;transform:translateX(-50%);width:26px;height:3px;background:var(--stamp)}
+
+.scrim{position:fixed;inset:0;background:rgba(24,35,56,.5);z-index:60;display:flex;align-items:flex-end;justify-content:center}
+.scrim[hidden]{display:none}
+.sheetwrap{position:relative;width:100%;max-width:660px}
+.sheet{background:var(--paper);width:100%;max-height:88vh;overflow:auto;border-radius:10px 10px 0 0;
+  padding:16px 16px calc(20px + env(safe-area-inset-bottom));animation:up .22s ease-out}
+@keyframes up{from{transform:translateY(24px);opacity:.4}to{transform:none;opacity:1}}
+.sheet h3{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:15px;margin:2px 0 4px}
+.sheet .close{position:absolute;right:14px;top:12px;font-size:22px;line-height:1;color:var(--ink-soft);z-index:2}
+
+/* unit entry grid */
+.urow{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--rule)}
+.urow .fno{font-family:'Oswald',sans-serif;font-size:13px;width:52px;flex:0 0 52px}
+.urow .nm{flex:1;min-width:0;font-size:12.5px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.urow input{width:64px;flex:0 0 64px;margin:0;text-align:right;font-family:'Courier Prime',monospace;font-weight:700;border-bottom:1.5px solid var(--water)}
+.urow .tot{width:70px;flex:0 0 70px;text-align:right;font-family:'Courier Prime',monospace;font-size:13px}
+/* per-flat monthly entry card */
+.fcard{border:1px solid var(--rule);border-radius:4px;padding:9px 10px 10px;margin-top:9px;background:var(--paper-2)}
+.fcard.done{opacity:.55;padding:9px 10px}
+.fhead{display:flex;align-items:center;gap:9px}
+.fhead .fno{font-family:'Oswald',sans-serif;font-size:13.5px;flex:0 0 auto}
+.fhead .nm{flex:1;min-width:0;font-size:12px;color:var(--ink-soft);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fhead .ftot{font-family:'Courier Prime',monospace;font-weight:700;font-size:13.5px;flex:0 0 auto}
+.fgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:7px}
+.fgrid label{margin:0}
+.fgrid span{display:block;font-size:9px;letter-spacing:.04em;color:var(--ink-soft);
+  font-family:'Noto Sans Gujarati',sans-serif;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fgrid input{margin-top:2px;text-align:right;font-family:'Courier Prime',monospace;font-weight:700;
+  font-size:14px;padding:5px 4px;border-bottom:1.5px solid var(--rule)}
+.fgrid label:nth-child(1) input{border-bottom-color:var(--water)}
+.fgrid label:nth-child(2) input{border-bottom-color:var(--due)}
+.fcard .on{margin-top:7px;font-size:12px;padding:5px 2px}
+.pvbar{position:sticky;top:0;z-index:39;background:var(--stamp);color:#fff;
+  display:flex;align-items:center;gap:10px;padding:8px 14px;font-size:12.5px}
+.pvbar[hidden]{display:none}
+.pvbar b{font-family:'Noto Sans Gujarati',sans-serif;font-weight:700}
+.pvbar .grow{flex:1;min-width:0}
+.pvbar button{background:#fff;color:var(--stamp);border-radius:3px;padding:6px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+
+.stickybar{position:sticky;bottom:0;background:var(--paper);border-top:1px solid var(--rule);padding:10px 0 0;margin-top:8px}
+
+.receipt{background:var(--paper-2);border:1px solid var(--rule);padding:20px 18px;position:relative;overflow:hidden;font-family:'Courier Prime',monospace}
+.receipt .perf{border-top:2px dotted var(--rule);margin:14px -18px;height:0;position:relative}
+.receipt .perf::before,.receipt .perf::after{content:"";position:absolute;top:-9px;width:16px;height:16px;border-radius:50%;background:var(--paper)}
+.receipt .perf::before{left:-8px} .receipt .perf::after{right:-8px}
+.receipt .rhead{text-align:center}
+.receipt .rhead .n{font-family:'Oswald',sans-serif;letter-spacing:.16em;text-transform:uppercase;font-size:11px;color:var(--stamp)}
+.receipt .rhead .s{font-family:'Oswald',sans-serif;font-weight:600;font-size:18px;margin-top:3px;letter-spacing:.04em;text-transform:uppercase}
+.receipt .line{display:flex;justify-content:space-between;gap:12px;font-size:13px;padding:4px 0}
+.receipt .line span:first-child{color:var(--ink-soft)}
+.receipt .line.gu span{font-family:'Noto Sans Gujarati',sans-serif}
+.receipt .total{font-size:19px;font-weight:700;border-top:1px solid var(--rule);margin-top:8px;padding-top:9px}
+.stampmark{position:absolute;right:8px;bottom:34px;border:3px double var(--paid);color:var(--paid);border-radius:4px;
+  padding:6px 12px;text-align:center;transform:rotate(-11deg);opacity:.88;animation:stampIn .45s cubic-bezier(.2,1.4,.4,1) both}
+.stampmark .a{font-family:'Noto Sans Gujarati',sans-serif;font-weight:700;font-size:15px;display:block}
+.stampmark .b{font-family:'Oswald',sans-serif;font-size:9px;letter-spacing:.22em;display:block}
+@keyframes stampIn{0%{transform:rotate(-26deg) scale(2.6);opacity:0}60%{transform:rotate(-9deg) scale(.94);opacity:1}100%{transform:rotate(-11deg) scale(1);opacity:.88}}
+@media (prefers-reduced-motion:reduce){.stampmark,.sheet{animation:none}}
+
+/* ---------- gate / login ---------- */
+#gate{position:fixed;inset:0;z-index:90;background:var(--paper);color:var(--ink);
+  display:flex;flex-direction:column;justify-content:center;padding:26px 22px calc(30px + env(safe-area-inset-bottom));overflow:auto}
+#gate[hidden]{display:none}
+#gate .glogo{font-family:'Oswald',sans-serif;font-weight:600;text-transform:uppercase;letter-spacing:.04em;font-size:30px;line-height:1.05}
+#gate .gmark{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.2em;font-size:10.5px;color:var(--stamp)}
+#gate .grule{height:0;border-top:3px solid var(--stamp);width:54px;margin:16px 0 22px}
+#gate h2{font-family:'Noto Sans Gujarati',sans-serif;font-size:16px;margin:0 0 4px;font-weight:700}
+#gate p{font-size:13px;color:var(--ink-soft);margin:0}
+#gate .role{display:block;width:100%;text-align:left;border:1px solid var(--rule);border-radius:4px;
+  padding:16px;margin-top:12px;background:var(--paper-2);box-shadow:var(--shadow)}
+#gate .role b{display:block;font-family:'Noto Sans Gujarati',sans-serif;font-size:16px}
+#gate .role span{display:block;font-size:12.5px;color:var(--ink-soft);margin-top:3px}
+#gate .pin{letter-spacing:.6em;font-size:26px;text-align:center;font-family:'Courier Prime',monospace}
+#gate .err{color:var(--due);font-size:13px;margin-top:12px;min-height:18px}
+#gate .foot{margin-top:26px;font-size:11.5px;color:var(--ink-soft);line-height:1.6}
+.rolechip{font-family:'Oswald',sans-serif;font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;
+  border:1px solid var(--rule);color:var(--ink-soft);border-radius:2px;padding:2px 6px;margin-left:8px;vertical-align:2px}
+
+#toast{position:fixed;left:50%;bottom:calc(var(--tabh) + 18px + env(safe-area-inset-bottom));
+  transform:translateX(-50%) translateY(10px);z-index:80;background:var(--ink);color:var(--paper-2);
+  padding:10px 16px;border-radius:3px;font-size:13.5px;opacity:0;pointer-events:none;transition:.2s;max-width:88vw;text-align:center}
+#toast.show{opacity:1;transform:translateX(-50%)}
+.muted{color:var(--ink-soft);font-size:12.5px}
+</style>
+</head>
+<body>
+
+<div id="gate" hidden></div>
+
+<header class="board">
+  <div class="mark">Society Manager<span class="rolechip" id="roleChip"></span></div>
+  <div class="soc">Royal Rejoice-3</div>
+  <div class="sub" id="socSub"></div>
+</header>
+
+<div class="pvbar" id="pvbar" hidden>
+  <div class="grow">રહેવાસી બાજુનું પ્રીવ્યૂ — <b id="pvFlat"></b></div>
+  <button data-a="exitpreview">એડમિનમાં પાછા</button>
+</div>
+
+<main id="view"></main>
+<nav class="tabs" id="tabs"></nav>
+
+<div class="scrim" id="scrim" hidden>
+  <div class="sheetwrap">
+    <button class="close" id="sheetClose" aria-label="બંધ કરો">✕</button>
+    <div class="sheet" id="sheet"></div>
+  </div>
+</div>
+<div id="toast" role="status"></div>
+
+<script>
+const KEY = 'royalrejoice3_v1';
+const MONTHS_GU = ['જાન્યુ','ફેબ્રુ','માર્ચ','એપ્રિલ','મે','જૂન','જુલાઈ','ઓગસ્ટ','સપ્ટે','ઓક્ટો','નવે','ડિસે'];
+const SEED = [];
+
+const SKEY = 'royalrejoice3_session';
+
+let db = {
+  society:{ name:'Royal Rejoice - 3', address:'', maint:800, unitRate:10, penalty:100,
+            shopMaint:500, shopUnitRate:3 },
+  auth:{ pin:'', admin:'', guardPin:'', guard:'' },
+  flats:[], bills:[], notices:[], complaints:[], visitors:[], expenses:[]
+};
+let session = null;     // {role:'admin'} | {role:'member', flatId}
+let gateStep = 'choose';
+let tab = 'home';
+let billMonth = null;
+let flatQuery = '';
+
+/* ---------- storage ---------- */
+const store = {
+  async get(){
+    try{ if (window.storage){ const r = await window.storage.get(KEY); return r ? JSON.parse(r.value) : null; } }catch(e){}
+    try{ return JSON.parse(localStorage.getItem(KEY) || 'null'); }catch(e){ return null; }
+  },
+  async set(v){
+    const s = JSON.stringify(v);
+    try{ if (window.storage){ await window.storage.set(KEY, s); return; } }catch(e){}
+    try{ localStorage.setItem(KEY, s); }catch(e){}
+  }
+};
+const save = () => store.set(db);
+
+const sess = {
+  async get(){
+    try{ if (window.storage){ const r = await window.storage.get(SKEY); return r ? JSON.parse(r.value) : null; } }catch(e){}
+    try{ return JSON.parse(localStorage.getItem(SKEY) || 'null'); }catch(e){ return null; }
+  },
+  async set(v){
+    const s = JSON.stringify(v);
+    try{ if (window.storage){ await window.storage.set(SKEY, s); return; } }catch(e){}
+    try{ localStorage.setItem(SKEY, s); }catch(e){}
+  }
+};
+const isAdmin = () => session && session.role === 'admin';
+const isGuard = () => session && session.role === 'guard';
+const isMember = () => session && session.role === 'member';
+const myFlat = () => session && session.flatId ? flatOf(session.flatId) : null;
+
+/* ---------- helpers ---------- */
+const uid = () => Math.random().toString(36).slice(2,9);
+const $ = s => document.querySelector(s);
+const $$ = s => [...document.querySelectorAll(s)];
+const money = n => '₹' + new Intl.NumberFormat('en-IN').format(Math.round(n||0));
+const esc = s => String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const monthKey = d => { d=d||new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'); };
+const monthLabel = k => { const [y,m]=k.split('-'); return MONTHS_GU[+m-1]+' '+y; };
+const today = () => new Date().toISOString().slice(0,10);
+const dateLabel = s => { if(!s) return '—'; const d=new Date(s); return d.getDate()+' '+MONTHS_GU[d.getMonth()]+' '+d.getFullYear(); };
+const flatOf = id => db.flats.find(f=>f.id===id);
+const isShop = f => f && f.kind === 'shop';
+const defMaint = f => isShop(f) ? (db.society.shopMaint ?? 500) : db.society.maint;
+const defRate  = f => isShop(f) ? (db.society.shopUnitRate ?? 3) : db.society.unitRate;
+const nFlats = () => db.flats.filter(f=>!isShop(f)).length;
+const nShops = () => db.flats.filter(isShop).length;
+const flatName = id => flatOf(id)?.no || '—';
+const monthCharges = b => (b.maint||0) + (b.units||0)*(b.unitRate||0) + (b.parking||0) + (b.other||0) + (b.penalty||0);
+const billTotal = b => monthCharges(b) + (b.carry||0);
+const waterAmt = b => (b.units||0)*(b.unitRate||0);
+const isDue = b => b.status !== 'paid' && b.status !== 'carried';
+const prevDue = b => b.carry || 0;
+const grand = b => billTotal(b);
+const autoCarry = (flatId, month) => db.bills
+  .filter(x => x.flatId===flatId && x.month < month && isDue(x))
+  .reduce((s,x)=>s+billTotal(x), 0);
+const hasExtra = b => (b.parking||0)||(b.other||0)||(b.penalty||0);
+const extraLine = b => [ (b.parking?`પાર્કિંગ ${money(b.parking)}`:''),
+                         (b.other?`${esc(b.otherNote||'અન્ય')} ${money(b.other)}`:''),
+                         (b.penalty?`પેનલ્ટી ${money(b.penalty)}`:'') ].filter(Boolean).join(' · ');
+const prevMonth = k => { const [y,m]=k.split('-').map(Number); const d=new Date(y,m-2,1); return monthKey(d); };
+
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2400); }
+
+function openSheet(html){ $('#sheet').innerHTML=html; $('#scrim').hidden=false; document.body.style.overflow='hidden'; }
+function closeSheet(){ $('#scrim').hidden=true; $('#sheet').innerHTML=''; document.body.style.overflow=''; }
+$('#sheetClose').addEventListener('click', closeSheet);
+$('#scrim').addEventListener('click', e => { if(e.target===$('#scrim')) closeSheet(); });
+document.addEventListener('keydown', e => { if(e.key==='Escape' && !$('#scrim').hidden) closeSheet(); });
+
+/* ---------- tabs ---------- */
+const ICONS = {
+  home:'<path d="M3 10.5 12 3l9 7.5"/><path d="M5.5 9.5V21h13V9.5"/>',
+  flats:'<rect x="4" y="3" width="16" height="18" rx="1"/><path d="M8 7h2M14 7h2M8 11h2M14 11h2M8 15h2M14 15h2M10.5 21v-3h3v3"/>',
+  bills:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9.5 8h5M9.5 12h5"/>',
+  notices:'<rect x="3" y="4" width="18" height="14" rx="1"/><path d="M12 18v3M7 8h10M7 12h6"/>',
+  more:'<circle cx="12" cy="8" r="3.4"/><path d="M4.5 20a7.5 7.5 0 0 1 15 0"/>',
+  mybills:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2Z"/><path d="M9.5 8h5M9.5 12h5"/>',
+  mycomp:'<path d="M4 5h16v11H9l-5 4Z"/><path d="M12 8v3.5M12 13.6v.1"/>',
+  gvis:'<path d="M3 20a6 6 0 0 1 12 0"/><circle cx="9" cy="8" r="3.2"/><path d="M17 9h5M19.5 6.5v5"/>',
+  gdir:'<rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/>'
+};
+const TABS_ADMIN = [['home','ડેશબોર્ડ'],['flats','ફ્લેટ'],['bills','બિલ'],['notices','નોટિસ'],['more','એડમિન']];
+const TABS_MEMBER = [['home','ઘર'],['mybills','મારાં બિલ'],['notices','નોટિસ'],['mycomp','ફરિયાદ']];
+const TABS_GUARD = [['home','ગેટ'],['gvis','મુલાકાતી'],['gdir','ડિરેક્ટરી'],['notices','નોટિસ']];
+const tabsFor = () => isAdmin() ? TABS_ADMIN : isGuard() ? TABS_GUARD : TABS_MEMBER;
+function renderTabs(){
+  const T = tabsFor();
+  $('#tabs').style.gridTemplateColumns = `repeat(${T.length},1fr)`;
+  $('#tabs').innerHTML = T.map(([id,l])=>`<button data-tab="${id}" ${tab===id?'aria-current="page"':''}>
+    <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">${ICONS[id]||ICONS.more}</svg><span>${l}</span></button>`).join('');
+}
+$('#tabs').addEventListener('click', e => {
+  const b=e.target.closest('button[data-tab]'); if(!b) return;
+  tab=b.dataset.tab; render(); window.scrollTo({top:0});
+});
+
+/* ============================ VIEWS ============================ */
+function render(){
+  if (!session){ renderGate(); return; }
+  $('#gate').hidden = true;
+  const f = myFlat();
+  $('#pvbar').hidden = !session.preview;
+  if (session.preview) $('#pvFlat').textContent = isGuard()
+    ? (db.auth.guard || 'સિક્યોરિટી')
+    : `${f?.no||''} · ${f?.owner||''}`;
+  $('#roleChip').textContent = isAdmin() ? 'એડમિન' : isGuard() ? 'સિક્યોરિટી'
+    : (session.preview ? 'પ્રીવ્યૂ' : esc(f?.no || 'રહેવાસી'));
+  if (isAdmin()){
+    const due = db.bills.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+    $('#socSub').textContent = `${nFlats()} ફ્લેટ · ${nShops()} શોપ · મેન્ટેનન્સ ${money(db.society.maint)}/${money(db.society.shopMaint)} · બાકી ${money(due)}`;
+  } else if (isGuard()){
+    const t = today();
+    const inToday = db.visitors.filter(v=>v.date===t).length;
+    const inside = db.visitors.filter(v=>!v.out).length;
+    $('#socSub').textContent = `${esc(db.auth.guard||'સિક્યોરિટી')} · આજે ${inToday} એન્ટ્રી · ${inside} અંદર`;
+  } else {
+    const myDue = db.bills.filter(b=>b.flatId===session.flatId && isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+    $('#socSub').textContent = `${f?.owner||''} · ${myDue ? 'બાકી '+money(myDue) : 'કોઈ બાકી નથી'}`;
+  }
+  const views = {home:isAdmin()?vHome:isGuard()?vGuardHome:vMemberHome, flats:vFlats, bills:vBills,
+                 notices:vNotices, more:vMore, mybills:vMyBills, mycomp:vMyComp,
+                 gvis:vVisitorLog, gdir:vDirectory};
+  if (!tabsFor().some(t=>t[0]===tab)) tab = 'home';
+  views[tab]();
+}
+
+/* ============================ LOGIN GATE ============================ */
+const GHEAD = `<div class="gmark">Society Manager</div><div class="glogo">Royal Rejoice-3</div><div class="grule"></div>`;
+
+function renderGate(){
+  const g = $('#gate'); g.hidden = false;
+  if (!db.auth.pin) gateStep = 'setup';
+
+  if (gateStep === 'setup'){
+    g.innerHTML = `${GHEAD}
+      <h2>પહેલી વાર — PIN સેટ કરો</h2>
+      <p>એપમાં ત્રણ લોગિન છે: એડમિન, સોસાયટી મેમ્બર અને સિક્યોરિટી. મેમ્બર પોતાના મોબાઇલ નંબરથી લોગિન કરે, બાકી બેને PIN જોઈએ.</p>
+      <label><span class="lb">એડમિનનું નામ</span><input id="gn" placeholder="દા.ત. સેક્રેટરી પટેલ સાહેબ"></label>
+      <label><span class="lb">એડમિન PIN (૪ આંકડા)</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <label><span class="lb">એડમિન PIN ફરી લખો</span><input id="gp2" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <label><span class="lb">સિક્યોરિટી PIN (વોચમેન માટે — અલગ રાખો)</span><input id="gp3" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <div class="err" id="ge"></div>
+      <button class="btn full" id="gok">સેટ કરો અને ચાલુ કરો</button>
+      <div class="foot">PIN ભૂલી જવાય તો રીસેટ કરવાનો રસ્તો નથી — બેકઅપ ફાઇલ સાચવી રાખજો.</div>`;
+    $('#gok').addEventListener('click', async ()=>{
+      const p=$('#gp').value.trim(), p2=$('#gp2').value.trim(), g3=$('#gp3').value.trim();
+      if(!/^\d{4}$/.test(p)) return gerr('એડમિન PIN બરાબર ૪ આંકડાનો હોવો જોઈએ');
+      if(p!==p2) return gerr('બંને એડમિન PIN સરખા નથી');
+      if(!/^\d{4}$/.test(g3)) return gerr('સિક્યોરિટી PIN પણ ૪ આંકડાનો લખો');
+      if(g3===p) return gerr('સિક્યોરિટી PIN એડમિન કરતાં અલગ રાખો');
+      db.auth = { pin:p, admin:$('#gn').value.trim() || 'એડમિન', guardPin:g3, guard:'ગેટ સિક્યોરિટી' };
+      await save(); await login({role:'admin'});
+    });
+    focusFix();
+    return;
+  }
+
+  if (gateStep === 'admin'){
+    g.innerHTML = `${GHEAD}
+      <h2>એડમિન લોગિન</h2>
+      <p>${esc(db.auth.admin||'એડમિન')} — તમારો ૪ આંકડાનો PIN લખો.</p>
+      <label><span class="lb">PIN</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <div class="err" id="ge"></div>
+      <button class="btn full" id="gok">લોગિન</button>
+      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>`;
+    const go = async ()=>{
+      if($('#gp').value.trim() !== db.auth.pin) return gerr('PIN ખોટો છે');
+      await login({role:'admin'});
+    };
+    $('#gok').addEventListener('click', go);
+    $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+    focusFix();
+    return;
+  }
+
+  if (gateStep === 'member'){
+    const opts = db.flats.slice().sort((a,b)=>String(a.no).localeCompare(String(b.no),undefined,{numeric:true}))
+      .map(f=>`<option value="${f.id}">${esc(f.no)} — ${esc(f.owner||'')}</option>`).join('');
+    g.innerHTML = `${GHEAD}
+      <h2>રહેવાસી લોગિન</h2>
+      <p>તમારો ફ્લેટ પસંદ કરો અને નોંધાયેલા મોબાઇલ નંબરના છેલ્લા ૪ આંકડા લખો.</p>
+      <label><span class="lb">ફ્લેટ</span><select id="gf">${opts}</select></label>
+      <label><span class="lb">મોબાઇલના છેલ્લા ૪ આંકડા</span><input id="gp" class="pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <div class="err" id="ge"></div>
+      <button class="btn full" id="gok">લોગિન</button>
+      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>
+      <div class="foot">નંબર નોંધાયેલ ન હોય કે બદલાયો હોય તો એડમિનને કહી અપડેટ કરાવો.</div>`;
+    const go = async ()=>{
+      const f = flatOf($('#gf').value);
+      if(!f.phone) return gerr('આ ફ્લેટનો મોબાઇલ નંબર નોંધાયેલ નથી — એડમિનનો સંપર્ક કરો');
+      if($('#gp').value.trim() !== f.phone.slice(-4)) return gerr('આંકડા મળતા નથી');
+      await login({role:'member', flatId:f.id});
+    };
+    $('#gok').addEventListener('click', go);
+    $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+    focusFix();
+    return;
+  }
+
+  if (gateStep === 'guard'){
+    g.innerHTML = `${GHEAD}
+      <h2>સિક્યોરિટી લોગિન</h2>
+      <p>${db.auth.guardPin ? esc(db.auth.guard||'ગેટ સિક્યોરિટી')+' — ૪ આંકડાનો PIN લખો.'
+        : 'હજી સિક્યોરિટી PIN સેટ થયો નથી. એડમિનને કહો — એડમિન ટૅબમાંથી સેટ થશે.'}</p>
+      ${db.auth.guardPin?`<label><span class="lb">PIN</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <div class="err" id="ge"></div>
+      <button class="btn full" id="gok">લોગિન</button>`:'<div style="height:10px"></div>'}
+      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>
+      <div class="foot">સિક્યોરિટી ફક્ત મુલાકાતીની એન્ટ્રી, ડિરેક્ટરી અને નોટિસ જોઈ શકે. બિલ કે પૈસાની કોઈ વિગત નહીં.</div>`;
+    if (db.auth.guardPin){
+      const go = async ()=>{
+        if($('#gp').value.trim() !== db.auth.guardPin) return gerr('PIN ખોટો છે');
+        await login({role:'guard'});
+      };
+      $('#gok').addEventListener('click', go);
+      $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+      focusFix();
+    }
+    return;
+  }
+
+  g.innerHTML = `${GHEAD}
+    <h2>તમે કોણ છો?</h2>
+    <p>દરેકને પોતાના કામ પૂરતું જ દેખાય છે.</p>
+    <button class="role" data-g="admin"><b>એડમિન / કમિટી</b><span>બિલ, વસૂલી, ખર્ચ, નોટિસ — બધું</span></button>
+    <button class="role" data-g="member"><b>સોસાયટી મેમ્બર</b><span>મારાં બિલ, રસીદ, નોટિસ, ફરિયાદ</span></button>
+    <button class="role" data-g="guard"><b>સિક્યોરિટી / ગેટ</b><span>મુલાકાતીની એન્ટ્રી, ડિરેક્ટરી, નોટિસ</span></button>
+    <div class="foot">આ લોગિન ફોનમાં જ ચકાસાય છે — ડેટા ક્યાંય મોકલાતો નથી. એક ફોનમાં એક જ વખત લોગિન કરવાનું, પછી એપ સીધી ખૂલશે.</div>`;
+}
+function gerr(m){ const e=$('#ge'); if(e){ e.textContent=m; } }
+function focusFix(){ const i=$('#gate .pin'); if(i) setTimeout(()=>i.focus(),120); }
+$('#gate').addEventListener('click', e=>{
+  const b = e.target.closest('[data-g]'); if(!b) return;
+  gateStep = b.dataset.g; renderGate();
+});
+async function login(s){
+  session = s; await sess.set(s);
+  tab = 'home'; gateStep = 'choose';
+  $('#gate').hidden = true;
+  render();
+  toast(s.role==='admin' ? 'એડમિન તરીકે લોગિન થયું'
+      : s.role==='guard' ? 'સિક્યોરિટી તરીકે લોગિન થયું'
+      : 'સ્વાગત છે, ' + (flatOf(s.flatId)?.owner||''));
+}
+async function logout(){
+  if(!confirm('લોગ આઉટ કરવું છે?')) return;
+  session = null; await sess.set(null);
+  gateStep = 'choose'; renderGate();
+}
+
+/* ============================ MEMBER VIEWS ============================ */
+function vMemberHome(){
+  const f = myFlat(); const mk = monthKey();
+  const mine = db.bills.filter(b=>b.flatId===f.id).sort((a,b)=>b.month.localeCompare(a.month));
+  const cur = mine.find(b=>b.month===mk);
+  const due = mine.filter(b=>isDue(b));
+  const dueAmt = due.reduce((s,b)=>s+billTotal(b),0);
+  const myComp = db.complaints.filter(c=>c.flatId===f.id && c.status==='open').length;
+
+  $('#view').innerHTML = `
+    <div class="eyebrow">મારો ફ્લેટ</div>
+    <div class="card">
+      <div class="row" style="padding-top:0"><div class="chip">${esc(f.no)}</div>
+        <div class="grow"><div class="title">${esc(f.owner||'—')}</div>
+          <div class="meta">${f.members||0} સભ્ય${f.type==='rent'?' · ભાડે':''}${f.phone?' · '+esc(f.phone):''}</div></div></div>
+    </div>
+
+    <div class="eyebrow">${monthLabel(mk)} નું બિલ</div>
+    ${cur ? `<div class="card">
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">મેન્ટેનન્સ</div></div><div class="amt">${money(cur.maint)}</div></div>
+      <div class="row"><div class="grow"><div class="title">પાણી</div><div class="meta">${cur.units||0} યુનિટ × ₹${cur.unitRate}</div></div>
+        <div class="amt" style="color:var(--water)">${money(waterAmt(cur))}</div></div>
+      ${cur.parking?`<div class="row"><div class="grow"><div class="title">પાર્કિંગ</div></div><div class="amt">${money(cur.parking)}</div></div>`:''}
+      ${cur.other?`<div class="row"><div class="grow"><div class="title">${esc(cur.otherNote||'અન્ય ચાર્જ')}</div></div><div class="amt">${money(cur.other)}</div></div>`:''}
+      ${cur.penalty?`<div class="row"><div class="grow"><div class="title">પેનલ્ટી</div><div class="meta">મોડું ભરવા બદલ</div></div><div class="amt" style="color:var(--due)">${money(cur.penalty)}</div></div>`:''}
+      <div class="row"><div class="grow"><div class="title">આ મહિનાનું બિલ</div></div><div class="amt">${money(monthCharges(cur))}</div></div>
+      ${prevDue(cur)?`<div class="row"><div class="grow"><div class="title">પાછલું બાકી</div></div>
+        <div class="amt" style="color:var(--due)">${money(prevDue(cur))}</div></div>`:''}
+      <div class="row"><div class="grow"><div class="title">કુલ ચૂકવવાના</div>
+        <div class="meta">${cur.status==='paid'?'ચૂકવેલ · '+dateLabel(cur.paidOn):'ચૂકવવાનું બાકી'}</div></div>
+        <div class="amt">${money(billTotal(cur))}</div>
+        ${cur.status==='paid'?`<button class="btn ghost sm" data-a="receipt" data-id="${cur.id}">રસીદ</button>`:`<span class="tag t-due">બાકી</span>`}</div>
+      <div class="btnrow"><button class="btn ghost sm full" data-a="pdfbill" data-id="${cur.id}">આ બિલ PDF માં સાચવો</button></div>
+    </div>` : `<div class="card"><p class="muted" style="margin:0">આ મહિનાનું બિલ હજી બન્યું નથી. એડમિન યુનિટ ભરે એટલે અહીં દેખાશે.</p></div>`}
+
+    ${dueAmt ? `<div class="stats" style="margin-top:12px">
+      <div class="stat due"><b>${money(dueAmt)}</b><span>કુલ બાકી · ${due.length} મહિના</span></div>
+      <div class="stat"><b>${mine.filter(b=>b.status==='paid').length}</b><span>ચૂકવેલ બિલ</span></div>
+    </div>` : `<div class="stats" style="margin-top:12px">
+      <div class="stat paid"><b>₹0</b><span>કંઈ બાકી નથી 🎉</span></div>
+      <div class="stat"><b>${mine.filter(b=>b.status==='paid').length}</b><span>ચૂકવેલ બિલ</span></div>
+    </div>`}
+
+    ${db.notices.length?`<div class="eyebrow">છેલ્લી નોટિસ</div>
+      <div class="slip"><h4>${esc(db.notices[0].title)}</h4><p>${esc(db.notices[0].body)}</p>
+      <div class="date">${dateLabel(db.notices[0].date)}</div></div>`:''}
+
+    <div class="eyebrow">ફરિયાદ</div>
+    <div class="card">
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">મારી ખુલ્લી ફરિયાદ</div>
+        <div class="meta">એડમિન ઉકેલે એટલે સ્ટેટસ બદલાશે</div></div><span class="tag t-open">${myComp}</span></div>
+      <div class="btnrow"><button class="btn full" data-a="addcomplaint">+ નવી ફરિયાદ નોંધો</button></div>
+    </div>
+
+    <div class="eyebrow">ખાતું</div>
+    <div class="card">${session.preview
+      ? `<button class="btn stamp full" data-a="exitpreview">એડમિનમાં પાછા જાઓ</button>`
+      : `<button class="btn ghost full" data-a="logout">લોગ આઉટ</button>`}</div>
+  `;
+}
+
+function vMyBills(){
+  const f = myFlat();
+  const mine = db.bills.filter(b=>b.flatId===f.id).sort((a,b)=>b.month.localeCompare(a.month));
+  const paidTot = mine.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+  const dueTot = mine.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+  $('#view').innerHTML = `
+    <div class="eyebrow">મારાં બિલ · ${esc(f.no)}</div>
+    <div class="stats">
+      <div class="stat paid"><b>${money(paidTot)}</b><span>અત્યાર સુધી ચૂકવ્યું</span></div>
+      <div class="stat due"><b>${money(dueTot)}</b><span>બાકી</span></div>
+    </div>
+    ${!mine.length?`<div class="empty"><h3>હજી બિલ નથી</h3><p>એડમિન બિલ બનાવે એટલે અહીં દેખાશે.</p></div>`:`
+    <div class="btnrow"><button class="btn stamp full" data-a="pdfmine">મારાં બધાં બિલ PDF</button></div>
+    <div class="eyebrow">બિલ ઇતિહાસ</div>
+    <div class="card">${mine.map(b=>`<div class="row">
+      <div class="grow"><div class="title">${monthLabel(b.month)}</div>
+        <div class="meta">${money(b.maint)} + ${b.units||0} યુનિટ × ₹${b.unitRate}${hasExtra(b)?' · '+extraLine(b):''}</div></div>
+      <div class="amt">${money(billTotal(b))}</div>
+      ${b.status==='paid'?`<span class="tag t-paid">ચૂકવેલ</span>`:`<span class="tag t-due">બાકી</span>`}
+      <button class="btn ghost sm" data-a="pdfbill" data-id="${b.id}">PDF</button>
+    </div>`).join('')}</div>`}
+    <div class="card" style="margin-top:12px"><p class="muted" style="margin:0">ચુકવણી કર્યા પછી એડમિન નોંધે એટલે અહીં “ચૂકવેલ” થઈ જશે અને રસીદ મળશે.</p></div>
+  `;
+}
+
+function vMyComp(){
+  const f = myFlat();
+  const mine = db.complaints.filter(c=>c.flatId===f.id);
+  $('#view').innerHTML = `
+    <div class="eyebrow">મારી ફરિયાદ</div>
+    <button class="btn full" data-a="addcomplaint">+ નવી ફરિયાદ નોંધો</button>
+    ${!mine.length?`<div class="empty"><h3>કોઈ ફરિયાદ નથી</h3><p>લિફ્ટ, પાણી, સફાઈ કે લાઇટની તકલીફ અહીં નોંધો — એડમિનને દેખાશે.</p></div>`:`
+    <div class="card" style="margin-top:12px">${mine.map(c=>`<div class="row">
+      <div class="grow"><div class="title" style="white-space:normal">${esc(c.text)}</div><div class="meta">${dateLabel(c.date)}</div></div>
+      <span class="tag ${c.status==='open'?'t-open':'t-paid'}">${c.status==='open'?'ચાલુ':'ઉકેલાયું'}</span>
+    </div>`).join('')}</div>`}
+  `;
+}
+
+/* ============================ SECURITY VIEWS ============================ */
+function vGuardHome(){
+  const t = today();
+  const inside = db.visitors.filter(v=>!v.out);
+  const todayList = db.visitors.filter(v=>v.date===t);
+  $('#view').innerHTML = `
+    <div class="eyebrow">ગેટ · ${dateLabel(t)}</div>
+    <div class="btnrow" style="margin-top:0">
+      <button class="btn water full" data-a="addvisitor">+ મુલાકાતીની એન્ટ્રી</button>
+    </div>
+    <div class="stats" style="margin-top:12px">
+      <div class="stat"><b>${inside.length}</b><span>અત્યારે અંદર</span></div>
+      <div class="stat"><b>${todayList.length}</b><span>આજની એન્ટ્રી</span></div>
+    </div>
+
+    <div class="eyebrow">અંદર છે — બહાર જાય ત્યારે નોંધો</div>
+    ${!inside.length?`<div class="empty"><h3>કોઈ અંદર નથી</h3><p>નવો મુલાકાતી આવે ત્યારે ઉપરનું બટન દબાવો.</p></div>`:`
+    <div class="card">${inside.map(v=>`<div class="row">
+      <div class="chip">${esc(flatName(v.flatId))}</div>
+      <div class="grow"><div class="title">${esc(v.name)}</div>
+        <div class="meta">${esc(v.purpose||'')}${v.veh?' · '+esc(v.veh):''} · અંદર ${esc(v.inT)}</div></div>
+      <button class="btn sm" data-a="vout" data-id="${v.id}">બહાર</button>
+    </div>`).join('')}</div>`}
+
+    <div class="eyebrow">બીજું</div>
+    <div class="card">
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn ghost sm" data-a="addcomplaint">બનાવ / ફરિયાદ નોંધો</button>
+        <button class="btn ghost sm" data-a="logout">લોગ આઉટ</button>
+      </div>
+      <p class="muted" style="margin:12px 0 0">ગેટ પર કંઈ પણ બને — પાણી લીકેજ, લાઇટ બંધ, ઝઘડો — તો નોંધી દો. એડમિનને તરત દેખાશે.</p>
+    </div>
+    ${session.preview?`<div class="card" style="margin-top:10px"><button class="btn stamp full" data-a="exitpreview">એડમિનમાં પાછા જાઓ</button></div>`:''}
+  `;
+}
+
+function vVisitorLog(){
+  const q = flatQuery.trim().toLowerCase();
+  const list = db.visitors.filter(v=>{
+    if(!q) return true;
+    return (v.name+' '+(v.purpose||'')+' '+(v.veh||'')+' '+flatName(v.flatId)).toLowerCase().includes(q);
+  });
+  const byDate = {};
+  list.slice(0,200).forEach(v=>{ (byDate[v.date] = byDate[v.date] || []).push(v); });
+  $('#view').innerHTML = `
+    <div class="eyebrow">મુલાકાતી રજિસ્ટર · ${db.visitors.length}</div>
+    <input class="search" id="q" placeholder="નામ, ફ્લેટ, વાહન કે કારણ શોધો" value="${esc(flatQuery)}">
+    <div class="btnrow"><button class="btn water" data-a="addvisitor">+ નવી એન્ટ્રી</button></div>
+    ${!list.length?`<div class="empty"><h3>કંઈ મળ્યું નહીં</h3><p>બીજું નામ કે નંબર લખી જુઓ.</p></div>`:
+    Object.keys(byDate).sort().reverse().map(d=>`
+      <div class="eyebrow">${dateLabel(d)} · ${byDate[d].length}</div>
+      <div class="card">${byDate[d].map(v=>`<div class="row">
+        <div class="chip">${esc(flatName(v.flatId))}</div>
+        <div class="grow"><div class="title">${esc(v.name)}</div>
+          <div class="meta">${esc(v.purpose||'')}${v.veh?' · '+esc(v.veh):''} · ${esc(v.inT)}${v.out?' → '+esc(v.out):''}</div></div>
+        ${v.out?`<span class="tag t-paid">બહાર</span>`:`<button class="btn sm" data-a="vout" data-id="${v.id}">બહાર</button>`}
+      </div>`).join('')}</div>`).join('')}
+  `;
+  const qi = $('#q');
+  qi.addEventListener('input', e => { flatQuery = e.target.value; const p=e.target.selectionStart; vVisitorLog(); const n=$('#q'); n.focus(); n.setSelectionRange(p,p); });
+}
+
+function vDirectory(){
+  const q = flatQuery.trim().toLowerCase();
+  const list = db.flats.filter(f => !q || (f.no+' '+(f.owner||'')+' '+(f.phone||'')).toLowerCase().includes(q))
+    .sort((a,b)=>(isShop(a)-isShop(b)) || String(a.no).localeCompare(String(b.no),undefined,{numeric:true}));
+  const wings = [...new Set(list.map(f=>f.wing||'—'))].sort();
+  $('#view').innerHTML = `
+    <div class="eyebrow">ડિરેક્ટરી · ${nFlats()} ફ્લેટ, ${nShops()} શોપ</div>
+    <input class="search" id="q" placeholder="ફ્લેટ નં. કે નામ શોધો" value="${esc(flatQuery)}">
+    ${!list.length?`<div class="empty"><h3>કંઈ મળ્યું નહીં</h3><p>બીજું નામ કે નંબર લખી જુઓ.</p></div>`:
+    wings.map(w=>`<div class="eyebrow">${w==='S'?'શોપ':esc(w)+' બ્લોક'}</div>
+      <div class="card">${list.filter(f=>(f.wing||'—')===w).map(f=>`<div class="row">
+        <div class="chip">${esc(f.no)}</div>
+        <div class="grow"><div class="title">${esc(f.owner||'નામ નથી')}</div>
+          <div class="meta">${f.phone?esc(f.phone):'ફોન નોંધાયેલ નથી'}</div></div>
+        ${f.phone?`<a class="btn sm" href="tel:${esc(f.phone)}" style="text-decoration:none">ફોન</a>`:''}
+      </div>`).join('')}</div>`).join('')}
+    <div class="card" style="margin-top:12px"><p class="muted" style="margin:0">આ યાદી ફક્ત ગેટ પરથી રહેવાસીને ફોન કરવા માટે છે.</p></div>
+  `;
+  const qi = $('#q');
+  qi.addEventListener('input', e => { flatQuery = e.target.value; const p=e.target.selectionStart; vDirectory(); const n=$('#q'); n.focus(); n.setSelectionRange(p,p); });
+}
+
+function vHome(){
+  const mk = monthKey();
+  const mb = db.bills.filter(b=>b.month===mk);
+  const collected = mb.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+  const pending = mb.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+  const units = mb.reduce((s,b)=>s+(b.units||0),0);
+  const water = mb.reduce((s,b)=>s+(b.units||0)*(b.unitRate||0),0);
+  const openC = db.complaints.filter(c=>c.status==='open').length;
+  const inside = db.visitors.filter(v=>!v.out).length;
+  const mExp = db.expenses.filter(e=>e.date.slice(0,7)===mk).reduce((s,e)=>s+e.amount,0);
+  const unpaid = mb.filter(b=>isDue(b));
+
+  $('#view').innerHTML = `
+    <div class="eyebrow">${monthLabel(mk)} · હિસાબ</div>
+    ${!mb.length ? `<div class="card"><p class="muted" style="margin:0">આ મહિનાનાં બિલ હજી બન્યાં નથી. દરેક ફ્લેટના પાણીના યુનિટ ભરીને એકસાથે બિલ બનાવો.</p>
+      <div class="btnrow"><button class="btn water full" data-a="genbills">${monthLabel(mk)} નાં બિલ બનાવો</button></div></div>` : `
+    <div class="stats">
+      <div class="stat paid"><b>${money(collected)}</b><span>જમા થયું · ${mb.filter(b=>b.status==='paid').length} ફ્લેટ</span></div>
+      <div class="stat due"><b>${money(pending)}</b><span>બાકી · ${unpaid.length} ફ્લેટ</span></div>
+      <div class="stat water"><b>${units}</b><span>કુલ પાણી યુનિટ</span></div>
+      <div class="stat"><b>${money(mExp)}</b><span>ખર્ચ · Expenses</span></div>
+    </div>
+    <div class="card" style="margin-top:10px">
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">મેન્ટેનન્સ (${mb.length} × ${money(db.society.maint)})</div></div>
+        <div class="amt">${money(mb.reduce((s,b)=>s+(b.maint||0),0))}</div></div>
+      <div class="row"><div class="grow"><div class="title">પાણી (${units} યુનિટ)</div></div>
+        <div class="amt" style="color:var(--water)">${money(water)}</div></div>
+      <div class="row"><div class="grow"><div class="title">કુલ બિલ</div></div>
+        <div class="amt">${money(collected+pending)}</div></div>
+    </div>`}
+
+    <div class="eyebrow">ઝડપી કામ</div>
+    <div class="card">
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn water sm" data-a="genbills">યુનિટ ભરો / બિલ</button>
+        <button class="btn stamp sm" data-a="addnotice">નોટિસ મૂકો</button>
+      </div>
+      <div class="btnrow">
+        <button class="btn ghost sm" data-a="addvisitor">મુલાકાતી</button>
+        <button class="btn ghost sm" data-a="addexpense">ખર્ચ નોંધો</button>
+      </div>
+    </div>
+
+    ${unpaid.length ? `
+    <div class="eyebrow">બાકી વસૂલી</div>
+    <div class="card">
+      ${unpaid.slice(0,6).map(b=>`<div class="row">
+        <div class="chip">${esc(flatName(b.flatId))}</div>
+        <div class="grow"><div class="title">${esc(flatOf(b.flatId)?.owner||'—')}</div>
+          <div class="meta">${b.units||0} યુનિટ · ${monthLabel(b.month)}</div></div>
+        <div class="amt">${money(billTotal(b))}</div>
+        <button class="btn sm" data-a="pay" data-id="${b.id}">ચૂકવ્યું</button></div>`).join('')}
+      ${unpaid.length>6?`<div class="muted" style="padding-top:10px">…અને બીજા ${unpaid.length-6}. બિલ ટૅબમાં બધા જુઓ.</div>`:''}
+    </div>`:''}
+
+    ${(openC||inside)?`<div class="eyebrow">ધ્યાન આપો</div><div class="card">
+      ${openC?`<div class="row"><div class="grow"><div class="title">ખુલ્લી ફરિયાદ</div><div class="meta">ઉકેલવાની બાકી</div></div><span class="tag t-open">${openC}</span></div>`:''}
+      ${inside?`<div class="row"><div class="grow"><div class="title">અંદર મુલાકાતી</div><div class="meta">હજી બહાર નથી ગયા</div></div><span class="tag t-open">${inside}</span></div>`:''}
+    </div>`:''}
+
+    ${db.notices.length?`<div class="eyebrow">છેલ્લી નોટિસ</div>
+      <div class="slip"><h4>${esc(db.notices[0].title)}</h4><p>${esc(db.notices[0].body)}</p>
+      <div class="date">${dateLabel(db.notices[0].date)}</div></div>`:''}
+  `;
+}
+
+function vFlats(){
+  const q = flatQuery.trim().toLowerCase();
+  const list = db.flats.filter(f => !q || (f.no+' '+(f.owner||'')+' '+(f.phone||'')).toLowerCase().includes(q));
+  const wings = [...new Set(list.map(f=>f.wing||'—'))].sort();
+  $('#view').innerHTML = `
+    <div class="eyebrow">ફ્લેટ ${nFlats()} · શોપ ${nShops()}</div>
+    <input class="search" id="q" placeholder="ફ્લેટ / શોપ નં., નામ કે ફોન શોધો" value="${esc(flatQuery)}">
+    <div class="btnrow"><button class="btn" data-a="addflat">+ નવો ફ્લેટ / શોપ</button></div>
+    ${!list.length?`<div class="empty"><h3>કંઈ મળ્યું નહીં</h3><p>બીજું નામ કે નંબર લખી જુઓ.</p></div>`:
+    wings.map(w=>`<div class="eyebrow">${w==='S'?'શોપ':esc(w)+' બ્લોક'} · ${list.filter(f=>(f.wing||'—')===w).length}</div>
+      <div class="card">${list.filter(f=>(f.wing||'—')===w)
+        .sort((a,b)=>String(a.no).localeCompare(String(b.no),undefined,{numeric:true}))
+        .map(f=>{
+          const d = db.bills.filter(b=>b.flatId===f.id && isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+          return `<div class="row">
+            <div class="chip">${esc(f.no)}</div>
+            <div class="grow"><div class="title">${esc(f.owner||(isShop(f)?'ભાડુઆત નોંધાયેલ નથી':'નામ નથી'))}</div>
+              <div class="meta">${isShop(f)?`મેન્ટેનન્સ ${money(f.maint??db.society.shopMaint)} · પાણી ₹${db.society.shopUnitRate}/યુનિટ`
+                : `${f.phone?esc(f.phone)+' · ':'ફોન નથી · '}${f.members||0} સભ્ય${f.type==='rent'?' · ભાડે':''}`}</div></div>
+            ${d?`<span class="tag t-due">${money(d)}</span>`:`<span class="tag t-paid">ક્લિયર</span>`}
+            <button class="btn ghost sm" data-a="editflat" data-id="${f.id}">✎</button></div>`;
+        }).join('')}</div>`).join('')}
+  `;
+  const qi = $('#q');
+  qi.addEventListener('input', e => { flatQuery = e.target.value; const p=e.target.selectionStart; vFlats(); const n=$('#q'); n.focus(); n.setSelectionRange(p,p); });
+}
+
+function vBills(){
+  const months = [...new Set(db.bills.map(b=>b.month))].sort().reverse();
+  if (!billMonth) billMonth = months[0] || monthKey();
+  if (!months.includes(billMonth)) months.unshift(billMonth);
+  const list = db.bills.filter(b=>b.month===billMonth)
+    .sort((a,b)=>(isShop(flatOf(a.flatId))-isShop(flatOf(b.flatId)))
+      || String(flatName(a.flatId)).localeCompare(String(flatName(b.flatId)),undefined,{numeric:true}));
+  const paid = list.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+  const pend = list.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+
+  $('#view').innerHTML = `
+    <div class="eyebrow">બિલ રજિસ્ટર</div>
+    <div class="card">
+      <label style="margin-top:0"><span class="lb">મહિનો</span>
+        <select id="mSel">${months.map(m=>`<option value="${m}" ${m===billMonth?'selected':''}>${monthLabel(m)}</option>`).join('')}</select></label>
+      <div class="btnrow">
+        <button class="btn water sm" data-a="genbills">યુનિટ ભરો / બિલ બનાવો</button>
+        <button class="btn ghost sm" data-a="remindall">બાકીવાળાને યાદ</button>
+      </div>
+      <div class="btnrow">
+        <button class="btn stamp sm" data-a="pdflist">બધાં બિલ PDF (યાદી)</button>
+        <button class="btn ghost sm" data-a="pdfslips">બિલ સ્લિપ PDF</button>
+      </div>
+    </div>
+    <div class="stats" style="margin-top:12px">
+      <div class="stat paid"><b>${money(paid)}</b><span>જમા · ${list.filter(b=>b.status==='paid').length} ફ્લેટ</span></div>
+      <div class="stat due"><b>${money(pend)}</b><span>બાકી · ${list.filter(b=>isDue(b)).length} ફ્લેટ</span></div>
+    </div>
+    ${!list.length?`<div class="empty"><h3>આ મહિનાનાં બિલ નથી</h3><p>“યુનિટ ભરો / બિલ બનાવો” દબાવો — દરેક ફ્લેટના પાણીના યુનિટ ભરો, મેન્ટેનન્સ ${money(db.society.maint)} આપોઆપ ઉમેરાશે.</p></div>`:`
+    <div class="eyebrow">${monthLabel(billMonth)}</div>
+    <div class="card">${list.map(b=>{ const arr=prevDue(b); return `<div class="row">
+      <div class="chip">${esc(flatName(b.flatId))}</div>
+      <div class="grow"><div class="title">${esc(flatOf(b.flatId)?.owner||'—')}</div>
+        <div class="meta">${money(b.maint)} + ${b.units||0}×₹${b.unitRate}${hasExtra(b)?' · '+extraLine(b):''}${arr?` · <b style="color:var(--due)">પાછલું ${money(arr)}</b>`:''}</div></div>
+      <div class="amt">${money(billTotal(b))}</div>
+      ${b.status==='paid'?`<button class="btn ghost sm" data-a="receipt" data-id="${b.id}">રસીદ</button>`
+        : b.status==='carried'?`<span class="tag t-open">આગળ લીધું</span>`
+        :`<button class="btn ghost sm" data-a="editbill" data-id="${b.id}">✎</button>
+          <button class="btn sm" data-a="pay" data-id="${b.id}">ચૂકવ્યું</button>`}
+    </div>`; }).join('')}</div>`}
+  `;
+  $('#mSel').addEventListener('change', e => { billMonth = e.target.value; vBills(); });
+}
+
+function vNotices(){
+  $('#view').innerHTML = `
+    <div class="eyebrow">નોટિસ બોર્ડ</div>
+    <button class="btn full" data-a="addnotice">+ નવી નોટિસ મૂકો</button>
+    ${!db.notices.length?`<div class="empty"><h3>બોર્ડ ખાલી છે</h3><p>મિટિંગ, પાણી બંધ, તહેવાર કે વસૂલીની જાણ અહીં મૂકો.</p></div>`:
+    db.notices.map(n=>`<div class="slip"><h4>${esc(n.title)}</h4><p>${esc(n.body)}</p>
+      <div class="date">${dateLabel(n.date)}</div>
+      <div class="btnrow"><button class="btn ghost sm" data-a="sharenotice" data-id="${n.id}">શેર કરો</button>
+      <button class="btn ghost sm" data-a="delnotice" data-id="${n.id}">કાઢી નાખો</button></div></div>`).join('')}
+  `;
+}
+
+function vMore(){
+  const open = db.complaints.filter(c=>c.status==='open');
+  const done = db.complaints.filter(c=>c.status!=='open');
+  const inside = db.visitors.filter(v=>!v.out);
+  const mk = monthKey();
+  const mExp = db.expenses.filter(e=>e.date.slice(0,7)===mk);
+  const noPhone = db.flats.filter(f=>!f.phone).length;
+
+  $('#view').innerHTML = `
+    <div class="eyebrow">ફરિયાદ · ${open.length} ખુલ્લી</div>
+    <button class="btn full" data-a="addcomplaint">+ ફરિયાદ નોંધો</button>
+    ${(open.length||done.length)?`<div class="card" style="margin-top:10px">
+      ${[...open,...done.slice(0,5)].map(c=>`<div class="row">
+        <div class="chip">${esc(flatName(c.flatId))}</div>
+        <div class="grow"><div class="title" style="white-space:normal">${esc(c.text)}</div><div class="meta">${dateLabel(c.date)}</div></div>
+        ${c.status==='open'?`<button class="btn sm" data-a="resolve" data-id="${c.id}">ઉકેલાયું</button>`:`<span class="tag t-paid">ઉકેલાયું</span>`}
+      </div>`).join('')}</div>`:`<div class="empty"><p>હાલ કોઈ ફરિયાદ નથી.</p></div>`}
+
+    <div class="eyebrow">મુલાકાતી · ${inside.length} અંદર</div>
+    <button class="btn full" data-a="addvisitor">+ મુલાકાતી નોંધો</button>
+    ${db.visitors.length?`<div class="card" style="margin-top:10px">
+      ${db.visitors.slice(0,8).map(v=>`<div class="row">
+        <div class="grow"><div class="title">${esc(v.name)} → ${esc(flatName(v.flatId))}</div>
+          <div class="meta">${esc(v.purpose||'')} · અંદર ${esc(v.inT)}${v.out?' · બહાર '+esc(v.out):''}</div></div>
+        ${v.out?`<span class="tag t-paid">બહાર</span>`:`<button class="btn sm" data-a="vout" data-id="${v.id}">બહાર</button>`}
+      </div>`).join('')}</div>`:`<div class="empty"><p>હજી કોઈ એન્ટ્રી નથી.</p></div>`}
+
+    <div class="eyebrow">ખર્ચ · ${monthLabel(mk)}</div>
+    <button class="btn full" data-a="addexpense">+ ખર્ચ નોંધો</button>
+    ${mExp.length?`<div class="card" style="margin-top:10px">
+      ${mExp.map(e=>`<div class="row"><div class="grow"><div class="title">${esc(e.head)}</div>
+        <div class="meta">${dateLabel(e.date)}${e.note?' · '+esc(e.note):''}</div></div>
+        <div class="amt">${money(e.amount)}</div></div>`).join('')}
+      <div class="row"><div class="grow"><div class="title">કુલ ખર્ચ</div></div><div class="amt">${money(mExp.reduce((s,e)=>s+e.amount,0))}</div></div>
+    </div>`:`<div class="empty"><p>આ મહિને કોઈ ખર્ચ નોંધ્યો નથી.</p></div>`}
+
+    <div class="eyebrow">દર · સેટિંગ</div>
+    <div class="card">
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">ફ્લેટ મેન્ટેનન્સ</div>
+        <div class="meta">દર ફ્લેટ, દર મહિને</div></div><div class="amt">${money(db.society.maint)}</div></div>
+      <div class="row"><div class="grow"><div class="title">શોપ મેન્ટેનન્સ</div>
+        <div class="meta">${nShops()} શોપ · પાણી ₹${db.society.shopUnitRate??3}/યુનિટ</div></div>
+        <div class="amt">${money(db.society.shopMaint??500)}</div></div>
+      <div class="row"><div class="grow"><div class="title">પાણીનો યુનિટ ભાવ</div>
+        <div class="meta">યુનિટ × ભાવ = પાણી બિલ</div></div><div class="amt" style="color:var(--water)">₹${db.society.unitRate}</div></div>
+      <div class="row"><div class="grow"><div class="title">મોડું ભરવાની પેનલ્ટી</div>
+        <div class="meta">પાછલું બાકી હોય તેમને જ લાગે</div></div><div class="amt" style="color:var(--due)">${money(db.society.penalty||0)}</div></div>
+      <div class="btnrow"><button class="btn full" data-a="settings">દર બદલો</button></div>
+    </div>
+
+    <div class="eyebrow">એડમિન ખાતું</div>
+    <div class="card">
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">${esc(db.auth.admin||'એડમિન')}</div>
+        <div class="meta">PIN થી લોગિન · ફક્ત આ ફોનમાં</div></div>
+        <button class="btn ghost sm" data-a="changepin">PIN બદલો</button></div>
+      <div class="row"><div class="grow"><div class="title">રહેવાસી લોગિન</div>
+        <div class="meta">ફ્લેટ નંબર + મોબાઇલના છેલ્લા ૪ આંકડા</div></div>
+        <button class="btn ghost sm" data-a="loginhelp">સંદેશ મોકલો</button></div>
+      <div class="row"><div class="grow"><div class="title">સિક્યોરિટી લોગિન</div>
+        <div class="meta">${db.auth.guardPin?'PIN સેટ થયેલો છે':'હજી PIN સેટ નથી — વોચમેન લોગિન નહીં કરી શકે'}</div></div>
+        <button class="btn ${db.auth.guardPin?'ghost':'stamp'} sm" data-a="guardpin">${db.auth.guardPin?'PIN બદલો':'PIN સેટ કરો'}</button></div>
+      <div class="row"><div class="grow"><div class="title">બીજી બાજુ જુઓ</div>
+        <div class="meta">મેમ્બર કે સિક્યોરિટીને એપ કેવી દેખાય છે</div></div>
+        <button class="btn stamp sm" data-a="preview">પ્રીવ્યૂ</button></div>
+      <div class="btnrow"><button class="btn full" data-a="logout">લોગ આઉટ</button></div>
+    </div>
+
+    <div class="eyebrow">માસિક રિપોર્ટ · ${monthLabel(mk)}</div>
+    <div class="card">
+      ${(()=>{ const mb=db.bills.filter(b=>b.month===mk);
+        const coll=mb.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+        const pend=mb.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+        const exp=mExp.reduce((s,e)=>s+e.amount,0);
+        return `<div class="row" style="padding-top:0"><div class="grow"><div class="title">જમા થયું</div></div><div class="amt" style="color:var(--paid)">${money(coll)}</div></div>
+        <div class="row"><div class="grow"><div class="title">બાકી</div></div><div class="amt" style="color:var(--due)">${money(pend)}</div></div>
+        <div class="row"><div class="grow"><div class="title">ખર્ચ</div></div><div class="amt">${money(exp)}</div></div>
+        <div class="row"><div class="grow"><div class="title">બચત (જમા − ખર્ચ)</div></div><div class="amt">${money(coll-exp)}</div></div>`; })()}
+      <div class="btnrow"><button class="btn ghost sm full" data-a="report">રિપોર્ટ WhatsApp પર મોકલો</button></div>
+    </div>
+
+    <div class="eyebrow">ડેટા</div>
+    <div class="card">
+      ${noPhone?`<p class="muted" style="margin:0 0 10px">${noPhone} ફ્લેટમાં ફોન નંબર ખૂટે છે — ફ્લેટ ટૅબમાં ✎ દબાવીને ઉમેરો, પછી WhatsApp રિમાઇન્ડર જશે.</p>`:''}
+      <div class="btnrow" style="margin-top:0">
+        <button class="btn ghost sm" data-a="backup">બેકઅપ ડાઉનલોડ</button>
+        <button class="btn ghost sm" data-a="restore">બેકઅપ રિસ્ટોર</button>
+      </div>
+      <div class="btnrow"><button class="btn danger sm full" data-a="wipe">બધો ડેટા ભૂંસો</button></div>
+      <p class="muted" style="margin:12px 0 0">ડેટા ફક્ત આ ફોનમાં જ સચવાય છે, કોઈ સર્વર પર જતો નથી. મહિને એકવાર બેકઅપ લેતા રહો.</p>
+    </div>
+  `;
+}
+
+/* ============================ ACTIONS ============================ */
+document.addEventListener('click', async e => {
+  const el = e.target.closest('[data-a]'); if(!el) return;
+  const id = el.dataset.id, a = el.dataset.a;
+  const MEMBER_OK = ['receipt','addcomplaint','sharenotice','logout','pdfbill','pdfmine','exitpreview'];
+  const GUARD_OK  = ['addvisitor','vout','addcomplaint','sharenotice','logout','exitpreview'];
+  if (isGuard() && !GUARD_OK.includes(a)) return toast('આ કામ ફક્ત એડમિન કરી શકે');
+  if (isMember() && !MEMBER_OK.includes(a)) return toast('આ કામ ફક્ત એડમિન કરી શકે');
+  if (a==='exitpreview'){ session = {role:'admin'}; tab='more'; render(); toast('એડમિન બાજુ પાછી'); return; }
+  if (a==='preview') return formPreview();
+  if (a==='guardpreview'){ session = {role:'guard', preview:true}; tab='home'; render(); return; }
+  if (a==='guardpin') return formGuardPin();
+  if (a==='logout') return logout();
+  if (a==='pdflist') return pdfMonthList();
+  if (a==='pdfslips') return pdfSlips();
+  if (a==='pdfbill') return pdfOneBill(id);
+  if (a==='pdfmine') return pdfMyStatement();
+  if (a==='changepin') return formPin();
+  if (a==='settings') return formSettings();
+  if (a==='addflat') return formFlat();
+  if (a==='editflat') return formFlat(id);
+  if (a==='genbills') return formUnits();
+  if (a==='pay') return formPay(id);
+  if (a==='editbill') return formBillEdit(id);
+  if (a==='receipt') return showReceipt(id);
+  if (a==='addnotice') return formNotice();
+  if (a==='addcomplaint') return formComplaint();
+  if (a==='addvisitor') return formVisitor();
+  if (a==='addexpense') return formExpense();
+  if (a==='resolve'){ db.complaints.find(c=>c.id===id).status='done'; await save(); render(); toast('ફરિયાદ ઉકેલાયેલી નોંધી'); return; }
+  if (a==='vout'){ const v=db.visitors.find(v=>v.id===id); v.out=new Date().toTimeString().slice(0,5); await save(); render(); toast(`${v.name} બહાર — ${v.out}`); return; }
+  if (a==='delnotice'){ if(confirm('આ નોટિસ કાઢી નાખવી છે?')){ db.notices=db.notices.filter(n=>n.id!==id); await save(); render(); } return; }
+  if (a==='sharenotice'){ const n=db.notices.find(n=>n.id===id); shareText(`📌 ${db.society.name}\n\n${n.title}\n${n.body}\n\n— ${dateLabel(n.date)}`); return; }
+  if (a==='remindall') return remindAll();
+  if (a==='loginhelp') return shareText(`📱 ${db.society.name} — સોસાયટી એપ\n\nએપ ખોલીને "રહેવાસી" પસંદ કરો.\nતમારો ફ્લેટ નંબર પસંદ કરો અને સોસાયટીમાં નોંધાયેલા મોબાઇલ નંબરના છેલ્લા ૪ આંકડા લખો.\n\nપછી તમે તમારાં બિલ, રસીદ, નોટિસ જોઈ શકશો અને ફરિયાદ નોંધાવી શકશો.`);
+  if (a==='report'){
+    const mk=monthKey(), mb=db.bills.filter(b=>b.month===mk);
+    const coll=mb.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+    const pend=mb.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+    const exp=db.expenses.filter(e=>e.date.slice(0,7)===mk).reduce((s,e)=>s+e.amount,0);
+    const units=mb.reduce((s,b)=>s+(b.units||0),0);
+    return shareText(`📊 ${db.society.name}\n${monthLabel(mk)} નો હિસાબ\n\nકુલ ફ્લેટ: ${db.flats.length}\nપાણી યુનિટ: ${units}\n\nજમા થયું: ${money(coll)}\nબાકી: ${money(pend)}\nખર્ચ: ${money(exp)}\nબચત: ${money(coll-exp)}`);
+  }
+  if (a==='backup') return backup();
+  if (a==='restore') return restore();
+  if (a==='wipe'){
+    if(confirm('બધો ડેટા કાયમ ભૂંસાઈ જશે (ફ્લેટની યાદી ફરી ભરાઈ જશે). ચાલુ રાખવું?')){
+      db = { society:{name:'Royal Rejoice - 3',address:'',maint:800,unitRate:10,penalty:100,shopMaint:500,shopUnitRate:3}, auth:db.auth, v:2,
+             flats:SEED.map(s=>({id:uid(),...s})), bills:[],notices:[],complaints:[],visitors:[],expenses:[] };
+      await save(); tab='home'; render(); toast('ડેટા રીસેટ થયો');
+    } return;
+  }
+});
+
+function bind(onOk){
+  const ok=$('#ok'); if(ok) ok.addEventListener('click', onOk);
+  const c=$('#sheet [data-x="cancel"]'); if(c) c.addEventListener('click', closeSheet);
+}
+const flatOptions = () => db.flats.map(f=>`<option value="${f.id}">${esc(f.no)} — ${esc(f.owner||'')}</option>`).join('');
+
+function formPreview(){
+  openSheet(`<h3>બીજી બાજુ જુઓ</h3>
+    <p class="muted" style="margin:0">એપ બીજાને કેવી દેખાય છે તે તપાસો. લોગ આઉટ કરવાની જરૂર નથી — ઉપરના બટનથી પાછા આવી જવાશે.</p>
+    <label><span class="lb">કોની બાજુ</span><select id="f0">
+      <option value="member">સોસાયટી મેમ્બર</option>
+      <option value="guard">સિક્યોરિટી / ગેટ</option></select></label>
+    <div id="pvflat"><label><span class="lb">કયો ફ્લેટ / શોપ</span><select id="f1">${db.flats.slice()
+      .sort((a,b)=>(isShop(a)-isShop(b)) || String(a.no).localeCompare(String(b.no),undefined,{numeric:true}))
+      .map(f=>`<option value="${f.id}">${esc(f.no)} — ${esc(f.owner||'')}</option>`).join('')}</select></label></div>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn stamp" id="ok">પ્રીવ્યૂ ખોલો</button></div>`);
+  $('#f0').addEventListener('change', e=>{ $('#pvflat').style.display = e.target.value==='guard' ? 'none' : ''; });
+  bind(()=>{
+    session = $('#f0').value==='guard'
+      ? { role:'guard', preview:true }
+      : { role:'member', flatId:$('#f1').value, preview:true };
+    tab='home'; closeSheet(); render();
+  });
+}
+
+function formGuardPin(){
+  const has = !!db.auth.guardPin;
+  openSheet(`<h3>સિક્યોરિટી PIN</h3>
+    <p class="muted" style="margin:0">વોચમેન આ PIN થી લોગિન કરશે. એને બિલ કે હિસાબ દેખાશે નહીં — ફક્ત મુલાકાતી નોંધ, ડિરેક્ટરી અને નોટિસ.</p>
+    <label><span class="lb">સિક્યોરિટીનું નામ</span><input id="f0" value="${esc(db.auth.guard||'ગેટ સિક્યોરિટી')}"></label>
+    ${has?`<label><span class="lb">એડમિન PIN (ખાતરી માટે)</span><input id="f1" type="password" inputmode="numeric" maxlength="4"></label>`:''}
+    <label><span class="lb">નવો સિક્યોરિટી PIN (૪ આંકડા)</span><input id="f2" type="password" inputmode="numeric" maxlength="4"></label>
+    <label><span class="lb">ફરી લખો</span><input id="f3" type="password" inputmode="numeric" maxlength="4"></label>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">સાચવો</button></div>`);
+  bind(async ()=>{
+    if(has && $('#f1').value.trim()!==db.auth.pin) return toast('એડમિન PIN ખોટો છે');
+    const p=$('#f2').value.trim();
+    if(!/^\d{4}$/.test(p)) return toast('PIN ૪ આંકડાનો હોવો જોઈએ');
+    if(p!==$('#f3').value.trim()) return toast('બંને PIN સરખા નથી');
+    if(p===db.auth.pin) return toast('એડમિન PIN કરતાં અલગ રાખો');
+    db.auth.guardPin=p; db.auth.guard=$('#f0').value.trim()||'ગેટ સિક્યોરિટી';
+    await save(); closeSheet(); render(); toast('સિક્યોરિટી PIN સચવાયો');
+  });
+}
+
+function formPin(){
+  openSheet(`<h3>એડમિન PIN બદલો</h3>
+    <label><span class="lb">એડમિનનું નામ</span><input id="f0" value="${esc(db.auth.admin)}"></label>
+    <label><span class="lb">જૂનો PIN</span><input id="f1" type="password" inputmode="numeric" maxlength="4"></label>
+    <label><span class="lb">નવો PIN (૪ આંકડા)</span><input id="f2" type="password" inputmode="numeric" maxlength="4"></label>
+    <label><span class="lb">નવો PIN ફરી લખો</span><input id="f3" type="password" inputmode="numeric" maxlength="4"></label>
+    <p class="muted" style="margin-top:12px">PIN ભૂલી જવાય તો રીસેટ થઈ શકતો નથી. બેકઅપ ફાઇલ સાચવી રાખો.</p>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">બદલો</button></div>`);
+  bind(async ()=>{
+    if($('#f1').value.trim()!==db.auth.pin) return toast('જૂનો PIN ખોટો છે');
+    const p=$('#f2').value.trim();
+    if(!/^\d{4}$/.test(p)) return toast('નવો PIN ૪ આંકડાનો હોવો જોઈએ');
+    if(p!==$('#f3').value.trim()) return toast('બંને નવા PIN સરખા નથી');
+    db.auth.pin=p; db.auth.admin=$('#f0').value.trim()||db.auth.admin;
+    await save(); closeSheet(); render(); toast('PIN બદલાયો');
+  });
+}
+
+function formSettings(){
+  openSheet(`<h3>દર બદલો</h3>
+    <label><span class="lb">સોસાયટીનું નામ</span><input id="f0" value="${esc(db.society.name)}"></label>
+    <label><span class="lb">સરનામું</span><input id="f3" value="${esc(db.society.address)}" placeholder="વિસ્તાર, શહેર"></label>
+    <div class="two">
+      <label><span class="lb">મેન્ટેનન્સ (₹)</span><input id="f1" type="number" inputmode="numeric" value="${db.society.maint}"></label>
+      <label><span class="lb">પાણી યુનિટ ભાવ (₹)</span><input id="f2" type="number" inputmode="decimal" value="${db.society.unitRate}"></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">શોપ મેન્ટેનન્સ (₹)</span><input id="f5" type="number" inputmode="numeric" value="${db.society.shopMaint??500}"></label>
+      <label><span class="lb">શોપ યુનિટ ભાવ (₹)</span><input id="f6" type="number" inputmode="decimal" value="${db.society.shopUnitRate??3}"></label>
+    </div>
+    <label><span class="lb">મોડું ભરવાની પેનલ્ટી (₹)</span><input id="f4" type="number" inputmode="numeric" value="${db.society.penalty||0}"></label>
+    <p class="muted" style="margin-top:12px">નવો દર હવે પછી બનતાં બિલમાં લાગુ થશે. જૂનાં બિલ જેમ છે તેમ રહેશે.</p>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">સાચવો</button></div>`);
+  bind(async ()=>{
+    db.society.name=$('#f0').value.trim()||db.society.name;
+    db.society.address=$('#f3').value.trim();
+    db.society.maint=+$('#f1').value||0;
+    db.society.unitRate=+$('#f2').value||0;
+    db.society.penalty=+$('#f4').value||0;
+    db.society.shopMaint=+$('#f5').value||0;
+    db.society.shopUnitRate=+$('#f6').value||0;
+    await save(); closeSheet(); render(); toast('દર સચવાયા');
+  });
+}
+
+function formFlat(id){
+  const f = id ? flatOf(id) : null;
+  openSheet(`<h3>${f?(isShop(f)?'શોપ ફેરફાર':'ફ્લેટ ફેરફાર'):'નવો ફ્લેટ / શોપ'}</h3>
+    <div class="two">
+      <label><span class="lb">પ્રકાર</span><select id="f9">
+        <option value="flat" ${!isShop(f)?'selected':''}>ફ્લેટ</option>
+        <option value="shop" ${isShop(f)?'selected':''}>શોપ</option></select></label>
+      <label><span class="lb">બ્લોક (શોપ માટે S)</span><input id="f1" value="${esc(f?.wing||'')}" placeholder="A"></label>
+    </div>
+    <label><span class="lb">નંબર</span><input id="f2" value="${esc(f?.no||'')}" placeholder="A-101 / Shop 1"></label>
+    <label><span class="lb">${isShop(f)?'ભાડુઆત / માલિકનું નામ':'રહેવાસીનું નામ'}</span><input id="f3" value="${esc(f?.owner||'')}"></label>
+    <label><span class="lb">મોબાઇલ નંબર</span><input id="f4" type="tel" inputmode="tel" value="${esc(f?.phone||'')}" placeholder="98XXXXXXXX"></label>
+    <div class="two">
+      <label><span class="lb">સભ્યો</span><input id="f5" type="number" inputmode="numeric" value="${f?.members??''}"></label>
+      <label><span class="lb">પ્રકાર</span><select id="f6">
+        <option value="own" ${f?.type!=='rent'?'selected':''}>માલિકી</option>
+        <option value="rent" ${f?.type==='rent'?'selected':''}>ભાડે</option></select></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">મેન્ટેનન્સ (ખાલી = ${money(defMaint(f))})</span>
+        <input id="f7" type="number" inputmode="numeric" value="${f?.maint??''}" placeholder="${defMaint(f)}"></label>
+      <label><span class="lb">વધારાનું પાર્કિંગ (₹/મહિનો)</span>
+        <input id="f8" type="number" inputmode="numeric" value="${f?.parking||''}" placeholder="0"></label>
+    </div>
+    <p class="muted" style="margin-top:10px">પાર્કિંગનો ચાર્જ દર મહિને આ ફ્લેટના બિલમાં આપોઆપ ઉમેરાશે.</p>
+    <div class="btnrow">
+      ${f?`<button class="btn danger" id="del">કાઢી નાખો</button>`:`<button class="btn ghost" data-x="cancel">રદ કરો</button>`}
+      <button class="btn" id="ok">સાચવો</button></div>`);
+  const d=$('#del');
+  if(d) d.addEventListener('click', async ()=>{
+    if(!confirm('આ ફ્લેટ અને તેનાં બિલ કાઢી નાખવાં છે?')) return;
+    db.flats=db.flats.filter(x=>x.id!==id); db.bills=db.bills.filter(b=>b.flatId!==id);
+    await save(); closeSheet(); render(); toast('ફ્લેટ કાઢી નાખ્યો');
+  });
+  bind(async ()=>{
+    const no=$('#f2').value.trim(); if(!no) return toast('ફ્લેટ નંબર જરૂરી છે');
+    const data={wing:$('#f1').value.trim().toUpperCase()||no.charAt(0).toUpperCase(), no,
+      owner:$('#f3').value.trim(), phone:$('#f4').value.replace(/\D/g,''),
+      members:+$('#f5').value||0, type:$('#f6').value, maint:$('#f7').value?+$('#f7').value:null,
+      parking:+$('#f8').value||0, kind:$('#f9').value};
+    if(data.kind==='shop'){ data.wing = data.wing || 'S'; if(data.maint===null) data.maint = db.society.shopMaint; }
+    if(f) Object.assign(f,data); else db.flats.push({id:uid(),...data});
+    await save(); closeSheet(); render(); toast(f?'ફ્લેટ અપડેટ થયો':'ફ્લેટ ઉમેરાયો');
+  });
+}
+
+/* ---- unit entry + bill generation (the main monthly job) ---- */
+function formUnits(){
+  const m = billMonth || monthKey();
+  openSheet(`<h3>મહિનાની એન્ટ્રી</h3>
+    <div class="two">
+      <label style="margin-top:8px"><span class="lb">મહિનો</span><input id="um" type="month" value="${m}"></label>
+      <label style="margin-top:8px"><span class="lb">પેનલ્ટી (₹)</span><input id="up" type="number" inputmode="numeric" value="${db.society.penalty||0}"></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">ફ્લેટ યુનિટ ભાવ (₹)</span><input id="ur" type="number" inputmode="decimal" value="${db.society.unitRate}"></label>
+      <label><span class="lb">શોપ યુનિટ ભાવ (₹)</span><input id="us" type="number" inputmode="decimal" value="${db.society.shopUnitRate??3}"></label>
+    </div>
+    <p class="muted" style="margin-top:10px">દરેક ફ્લેટ અને શોપ સામે ચારેય ખાનાં ભરી શકો: <b>યુનિટ</b>, <b>પાછલું બાકી</b>, <b>મેન્ટેનન્સ</b> અને <b>વધારાનો ચાર્જ</b>. ફ્લેટનું મેન્ટેનન્સ ${money(db.society.maint)}, શોપનું ${money(db.society.shopMaint)} — બંનેનો પાણીનો ભાવ પણ અલગ છે.</p>
+    <div class="btnrow" style="margin-top:10px">
+      <button class="btn ghost sm" id="fillm">બધામાં મેન્ટેનન્સ ભરો</button>
+    </div>
+    <div id="ulist"></div>
+    <div class="stickybar">
+      <div class="row" style="padding:6px 0;border:0"><div class="grow"><div class="title">કુલ વસૂલવાના</div>
+        <div class="meta" id="usum">—</div></div><div class="amt" id="utot">₹0</div></div>
+      <button class="btn water full" id="ok">બિલ સાચવો</button>
+    </div>`);
+
+  const drawList = () => {
+    const mm = $('#um').value || m;
+    const rows = db.flats.slice().sort((a,b)=>
+      (isShop(a)-isShop(b)) || String(a.no).localeCompare(String(b.no),undefined,{numeric:true}));
+    $('#ulist').innerHTML = rows.map(f=>{
+      const b = db.bills.find(x=>x.flatId===f.id && x.month===mm);
+      const prev = db.bills.find(x=>x.flatId===f.id && x.month===prevMonth(mm));
+      const locked = b && b.status==='paid';
+      const carry = b ? (b.carry||0) : autoCarry(f.id, mm);
+      if (locked) return `<div class="fcard done" data-f="${f.id}">
+        <div class="fhead"><span class="fno">${esc(f.no)}</span><span class="nm">${esc(f.owner||'—')}</span>
+          <span class="tag t-paid">ચૂકવેલ ${money(billTotal(b))}</span></div></div>`;
+      return `<div class="fcard" data-f="${f.id}">
+        <div class="fhead"><span class="fno">${esc(f.no)}</span>
+          <span class="nm">${isShop(f)?'શોપ · ':''}${esc(f.owner||'—')}${prev?` · ગયા મહિને ${prev.units||0} યુનિટ`:''}</span>
+          <span class="ftot">—</span></div>
+        <div class="fgrid">
+          <label><span>યુનિટ</span><input class="u" type="number" inputmode="numeric" min="0" value="${b?.units??''}" placeholder="0"></label>
+          <label><span>પાછલું બાકી</span><input class="c" type="number" inputmode="numeric" min="0" value="${carry||''}" placeholder="0"></label>
+          <label><span>મેન્ટેનન્સ</span><input class="m" type="number" inputmode="numeric" min="0" value="${b?.maint ?? (f.maint ?? defMaint(f))}"></label>
+          <label><span>વધારાનો ચાર્જ</span><input class="o" type="number" inputmode="numeric" min="0" value="${b?.other||''}" placeholder="0"></label>
+        </div>
+        <input class="on" value="${esc(b?.otherNote||'')}" list="ol" placeholder="વધારાનો ચાર્જ શેનો? (ટેબલ-ખુરશી, હોલ…)">
+      </div>`;
+    }).join('') + `<datalist id="ol"><option>ટેબલ-ખુરશી વપરાશ</option><option>હોલ વપરાશ</option>
+      <option>પાણીનું ટેન્કર</option><option>નુકસાન ભરપાઈ</option><option>ફાળો</option></datalist>`;
+    recalc();
+  };
+
+  const recalc = () => {
+    const fr = +$('#ur').value || 0, sr = +$('#us').value || 0, pen = +$('#up').value || 0;
+    let total=0, units=0, n=0, carryT=0, extraT=0;
+    $$('#ulist .fcard').forEach(r=>{
+      if (r.classList.contains('done')) return;
+      const f = flatOf(r.dataset.f);
+      const rate = isShop(f) ? sr : fr;
+      const u=+r.querySelector('.u').value||0, c=+r.querySelector('.c').value||0;
+      const mt=+r.querySelector('.m').value||0, o=+r.querySelector('.o').value||0;
+      const penalty = c>0 ? pen : 0;
+      const t = mt + u*rate + (f.parking||0) + o + penalty + c;
+      units+=u; carryT+=c; extraT+=o+(f.parking||0)+penalty; total+=t; n++;
+      r.querySelector('.ftot').textContent = money(t);
+    });
+    $('#utot').textContent = money(total);
+    $('#usum').textContent = `${n} ફ્લેટ · ${units} યુનિટ · પાછલું ${money(carryT)} · વધારાના ${money(extraT)}`;
+  };
+
+  $('#um').addEventListener('change', drawList);
+  $('#ur').addEventListener('input', recalc);
+  $('#us').addEventListener('input', recalc);
+  $('#up').addEventListener('input', recalc);
+  $('#ulist').addEventListener('input', recalc);
+  $('#fillm').addEventListener('click', ()=>{
+    $$('#ulist .fcard:not(.done)').forEach(r=>{
+      const f = flatOf(r.dataset.f);
+      r.querySelector('.m').value = f.maint ?? defMaint(f);
+    });
+    recalc(); toast(`ફ્લેટમાં ${money(db.society.maint)}, શોપમાં ${money(db.society.shopMaint)} ભરાયું`);
+  });
+  drawList();
+
+  $('#ok').addEventListener('click', async ()=>{
+    const mm = $('#um').value || m;
+    const fr = +$('#ur').value || 0, sr = +$('#us').value || 0, pen = +$('#up').value || 0;
+    let made=0, upd=0;
+    $$('#ulist .fcard').forEach(r=>{
+      if (r.classList.contains('done')) return;
+      const f = flatOf(r.dataset.f);
+      const rate = isShop(f) ? sr : fr;
+      const u=+r.querySelector('.u').value||0, c=+r.querySelector('.c').value||0;
+      const mt=+r.querySelector('.m').value||0, o=+r.querySelector('.o').value||0;
+      const note = r.querySelector('.on').value.trim();
+      const penalty = c>0 ? pen : 0;
+      // older unpaid bills are folded into this bill's carry, so they stop counting on their own
+      db.bills.filter(x=>x.flatId===f.id && x.month<mm && isDue(x)).forEach(x=>{ x.status='carried'; x.carriedTo=mm; });
+      let b = db.bills.find(x=>x.flatId===f.id && x.month===mm);
+      if(b){ Object.assign(b,{units:u,unitRate:rate,maint:mt,carry:c,other:o,otherNote:note,penalty,parking:f.parking||0}); upd++; }
+      else { db.bills.push({id:uid(),flatId:f.id,month:mm,maint:mt,units:u,unitRate:rate,
+             carry:c, parking:f.parking||0, other:o, otherNote:note, penalty,
+             status:'due',paidOn:null,mode:null,receiptNo:null}); made++; }
+    });
+    db.society.unitRate = fr; db.society.shopUnitRate = sr; db.society.penalty = pen;
+    billMonth = mm;
+    await save(); closeSheet(); tab='bills'; render();
+    toast(`${made} નવાં બિલ${upd?', '+upd+' અપડેટ':''}`);
+  });
+}
+
+function formBillEdit(id){
+  const b = db.bills.find(x=>x.id===id); const f = flatOf(b.flatId);
+  openSheet(`<h3>બિલ ફેરફાર · ${esc(f?.no)}</h3>
+    <p class="muted" style="margin:0">${esc(f?.owner||'')} · ${monthLabel(b.month)}</p>
+    <div class="two">
+      <label><span class="lb">મેન્ટેનન્સ (₹)</span><input id="f1" type="number" inputmode="numeric" value="${b.maint||0}"></label>
+      <label><span class="lb">પાણી યુનિટ</span><input id="f2" type="number" inputmode="numeric" value="${b.units||0}"></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">યુનિટ ભાવ (₹)</span><input id="f3" type="number" inputmode="decimal" value="${b.unitRate||0}"></label>
+      <label><span class="lb">પાર્કિંગ (₹)</span><input id="f4" type="number" inputmode="numeric" value="${b.parking||0}"></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">પેનલ્ટી (₹)</span><input id="f5" type="number" inputmode="numeric" value="${b.penalty||0}"></label>
+      <label><span class="lb">અન્ય ચાર્જ (₹)</span><input id="f6" type="number" inputmode="numeric" value="${b.other||0}"></label>
+    </div>
+    <label><span class="lb">પાછલું બાકી (₹)</span><input id="f8" type="number" inputmode="numeric" value="${b.carry||0}"></label>
+    <label><span class="lb">અન્ય ચાર્જ શેનો</span>
+      <input id="f7" value="${esc(b.otherNote||'')}" list="ol" placeholder="દા.ત. ટેબલ-ખુરશી વપરાશ">
+      <datalist id="ol"><option>ટેબલ-ખુરશી વપરાશ</option><option>હોલ વપરાશ</option><option>પાણીનું ટેન્કર</option>
+        <option>વધારાનું પાર્કિંગ</option><option>નુકસાન ભરપાઈ</option><option>ફાળો</option></datalist></label>
+    <div class="card" style="margin-top:10px"><div class="row" style="padding:0">
+      <div class="grow"><div class="title">કુલ ચૂકવવાના</div><div class="meta" id="beHint">—</div></div>
+      <div class="amt" id="beTot">—</div></div></div>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">સાચવો</button></div>`);
+  const calc = () => {
+    const t = (+$('#f1').value||0) + (+$('#f2').value||0)*(+$('#f3').value||0)
+            + (+$('#f4').value||0) + (+$('#f5').value||0) + (+$('#f6').value||0);
+    const c = +$('#f8').value||0;
+    $('#beTot').textContent = money(t + c);
+    $('#beHint').textContent = c ? `આ મહિનો ${money(t)} + પાછલું ${money(c)}` : 'આ મહિનાનું બિલ';
+  };
+  ['f1','f2','f3','f4','f5','f6','f8'].forEach(k=>$('#'+k).addEventListener('input', calc));
+  calc();
+  bind(async ()=>{
+    b.maint=+$('#f1').value||0; b.units=+$('#f2').value||0; b.unitRate=+$('#f3').value||0;
+    b.parking=+$('#f4').value||0; b.penalty=+$('#f5').value||0; b.other=+$('#f6').value||0;
+    b.otherNote=$('#f7').value.trim(); b.carry=+$('#f8').value||0;
+    await save(); closeSheet(); render(); toast('બિલ અપડેટ થયું');
+  });
+}
+
+function formPay(id){
+  const b = db.bills.find(x=>x.id===id), f = flatOf(b.flatId);
+  const arr = b.carry||0;
+  openSheet(`<h3>ચુકવણી નોંધો</h3>
+    <div class="card" style="margin-top:8px">
+      <div class="row" style="padding-top:0"><div class="chip">${esc(f?.no)}</div>
+        <div class="grow"><div class="title">${esc(f?.owner||'—')}</div><div class="meta">${monthLabel(b.month)}</div></div></div>
+      <div class="row"><div class="grow"><div class="title">મેન્ટેનન્સ</div></div><div class="amt">${money(b.maint)}</div></div>
+      <div class="row"><div class="grow"><div class="title">પાણી · ${b.units||0} × ₹${b.unitRate}</div></div>
+        <div class="amt" style="color:var(--water)">${money(waterAmt(b))}</div></div>
+      ${b.parking?`<div class="row"><div class="grow"><div class="title">પાર્કિંગ</div></div><div class="amt">${money(b.parking)}</div></div>`:''}
+      ${b.other?`<div class="row"><div class="grow"><div class="title">${esc(b.otherNote||'અન્ય ચાર્જ')}</div></div><div class="amt">${money(b.other)}</div></div>`:''}
+      ${b.penalty?`<div class="row"><div class="grow"><div class="title">પેનલ્ટી</div></div><div class="amt" style="color:var(--due)">${money(b.penalty)}</div></div>`:''}
+      <div class="row"><div class="grow"><div class="title">આ મહિનાનું બિલ</div></div><div class="amt">${money(monthCharges(b))}</div></div>
+      ${arr?`<div class="row"><div class="grow"><div class="title">પાછલું બાકી</div><div class="meta">જૂનું ન ચૂકવેલું</div></div>
+        <div class="amt" style="color:var(--due)">${money(arr)}</div></div>`:''}
+      <div class="row"><div class="grow"><div class="title">કુલ ચૂકવવાના</div></div><div class="amt">${money(billTotal(b))}</div></div>
+    </div>
+    <div class="two">
+      <label><span class="lb">તારીખ</span><input id="f2" type="date" value="${today()}"></label>
+      <label><span class="lb">કઈ રીતે</span><select id="f3"><option>રોકડ</option><option>UPI</option><option>ચેક</option><option>બેંક ટ્રાન્સફર</option></select></label>
+    </div>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">ચૂકવેલ નોંધો</button></div>`);
+  bind(async ()=>{
+    const d=$('#f2').value||today(), md=$('#f3').value;
+    b.paidOn=d; b.mode=md; b.status='paid';
+    b.receiptNo = b.receiptNo || (db.bills.filter(x=>x.status==='paid').length + 1000);
+    await save(); closeSheet(); render(); showReceipt(b.id);
+  });
+}
+
+function showReceipt(id){
+  const b = db.bills.find(x=>x.id===id), f = flatOf(b.flatId);
+  openSheet(`<h3>રસીદ</h3>
+    <div class="receipt">
+      <div class="rhead"><div class="n">Maintenance &amp; Water Receipt</div>
+        <div class="s">${esc(db.society.name)}</div>
+        ${db.society.address?`<div style="font-size:11px;color:var(--ink-soft);margin-top:2px">${esc(db.society.address)}</div>`:''}</div>
+      <div class="perf"></div>
+      <div class="line gu"><span>રસીદ નં.</span><span>#${b.receiptNo||'—'}</span></div>
+      <div class="line gu"><span>ફ્લેટ</span><span>${esc(f?.no)}</span></div>
+      <div class="line gu"><span>નામ</span><span style="text-align:right">${esc(f?.owner||'—')}</span></div>
+      <div class="line gu"><span>મહિનો</span><span>${monthLabel(b.month)}</span></div>
+      <div class="perf"></div>
+      <div class="line gu"><span>મેન્ટેનન્સ</span><span>${money(b.maint)}</span></div>
+      <div class="line gu"><span>પાણી ${b.units||0} યુનિટ × ₹${b.unitRate}</span><span>${money(waterAmt(b))}</span></div>
+      ${b.parking?`<div class="line gu"><span>પાર્કિંગ</span><span>${money(b.parking)}</span></div>`:''}
+      ${b.other?`<div class="line gu"><span>${esc(b.otherNote||'અન્ય ચાર્જ')}</span><span>${money(b.other)}</span></div>`:''}
+      ${b.penalty?`<div class="line gu"><span>પેનલ્ટી</span><span>${money(b.penalty)}</span></div>`:''}
+      ${b.carry?`<div class="line gu"><span>પાછલું બાકી</span><span>${money(b.carry)}</span></div>`:''}
+      <div class="line total gu"><span>કુલ ચૂકવેલ</span><span>${money(billTotal(b))}</span></div>
+      <div class="line gu" style="margin-top:6px"><span>તારીખ / રીત</span><span>${dateLabel(b.paidOn)} · ${esc(b.mode||'—')}</span></div>
+      <div class="stampmark"><span class="a">ચૂકવેલ</span><span class="b">PAID</span></div>
+      <div style="height:38px"></div>
+    </div>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">બંધ કરો</button>
+      <button class="btn ghost" data-a="pdfbill" data-id="${b.id}">PDF</button>
+      <button class="btn" id="ok">WhatsApp</button></div>`);
+  bind(()=>{
+    const ex = [b.parking?`પાર્કિંગ: ${money(b.parking)}`:'', b.other?`${b.otherNote||'અન્ય'}: ${money(b.other)}`:'',
+                b.penalty?`પેનલ્ટી: ${money(b.penalty)}`:''].filter(Boolean).join('\n');
+    const t = `✅ ${db.society.name}\nરસીદ #${b.receiptNo||''}\n\nફ્લેટ: ${f?.no}\nનામ: ${f?.owner||'—'}\nમહિનો: ${monthLabel(b.month)}\n\nમેન્ટેનન્સ: ${money(b.maint)}\nપાણી: ${b.units||0} યુનિટ × ₹${b.unitRate} = ${money(waterAmt(b))}${ex?'\n'+ex:''}\nકુલ ચૂકવેલ: ${money(billTotal(b))}\n\nતારીખ: ${dateLabel(b.paidOn)} (${b.mode||'—'})\nઆભાર 🙏`;
+    shareText(t, f?.phone); closeSheet();
+  });
+}
+
+function formNotice(){
+  openSheet(`<h3>નવી નોટિસ</h3>
+    <label><span class="lb">વિષય</span><input id="f1" placeholder="દા.ત. પાણીની ટાંકી સફાઈ"></label>
+    <label><span class="lb">વિગત</span><textarea id="f2" placeholder="ક્યારે, ક્યાં, અને રહેવાસીઓએ શું કરવાનું"></textarea></label>
+    <label><span class="lb">તારીખ</span><input id="f3" type="date" value="${today()}"></label>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">બોર્ડ પર મૂકો</button></div>`);
+  bind(async ()=>{
+    const t=$('#f1').value.trim(); if(!t) return toast('વિષય લખો');
+    db.notices.unshift({id:uid(),title:t,body:$('#f2').value.trim(),date:$('#f3').value||today()});
+    await save(); closeSheet(); tab='notices'; render(); toast('નોટિસ મુકાઈ');
+  });
+}
+function formComplaint(){
+  const mine = myFlat();
+  openSheet(`<h3>ફરિયાદ નોંધો</h3>
+    ${mine
+      ? `<label><span class="lb">ફ્લેટ</span><input id="f1" value="${esc(mine.no)}" data-fid="${mine.id}" disabled></label>`
+      : `<label><span class="lb">ફ્લેટ</span><select id="f1">${flatOptions()}</select></label>`}
+    <label><span class="lb">શું તકલીફ છે</span><textarea id="f2" placeholder="દા.ત. B બ્લોકની લિફ્ટ ત્રીજા માળે અટકે છે"></textarea></label>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">નોંધો</button></div>`);
+  bind(async ()=>{
+    const tx=$('#f2').value.trim(); if(!tx) return toast('વિગત લખો');
+    const fid = mine ? mine.id : $('#f1').value;
+    db.complaints.unshift({id:uid(),flatId:fid,text:tx,status:'open',date:today()});
+    await save(); closeSheet(); tab = mine ? 'mycomp' : 'more'; render(); toast('ફરિયાદ નોંધાઈ');
+  });
+}
+function formVisitor(){
+  openSheet(`<h3>મુલાકાતી એન્ટ્રી</h3>
+    <label><span class="lb">નામ</span><input id="f1" placeholder="મુલાકાતીનું નામ"></label>
+    <label><span class="lb">કયા ફ્લેટ / શોપમાં</span><select id="f2">${flatOptions()}</select></label>
+    <div class="two">
+      <label><span class="lb">કારણ</span><input id="f3" list="pl" placeholder="ડિલિવરી / મહેમાન">
+        <datalist id="pl"><option>મહેમાન</option><option>ડિલિવરી</option><option>કુરિયર</option>
+          <option>કામવાળા</option><option>પ્લમ્બર / ઇલેક્ટ્રિશિયન</option><option>કેબલ / ઇન્ટરનેટ</option>
+          <option>ગેસ સિલિન્ડર</option><option>ભાડે જોવા આવ્યા</option></datalist></label>
+      <label><span class="lb">અંદર આવ્યાનો સમય</span><input id="f4" type="time" value="${new Date().toTimeString().slice(0,5)}"></label>
+    </div>
+    <div class="two">
+      <label><span class="lb">વાહન નંબર</span><input id="f5" placeholder="GJ-01-AB-1234"></label>
+      <label><span class="lb">કેટલા જણ</span><input id="f6" type="number" inputmode="numeric" value="1" min="1"></label>
+    </div>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">એન્ટ્રી કરો</button></div>`);
+  bind(async ()=>{
+    const n=$('#f1').value.trim(); if(!n) return toast('નામ લખો');
+    db.visitors.unshift({id:uid(),name:n,flatId:$('#f2').value,purpose:$('#f3').value.trim(),
+      inT:$('#f4').value, veh:$('#f5').value.trim().toUpperCase(), qty:+$('#f6').value||1,
+      out:null,date:today()});
+    await save(); closeSheet(); tab = isGuard() ? 'home' : 'more'; render(); toast('એન્ટ્રી થઈ');
+  });
+}
+function formExpense(){
+  openSheet(`<h3>ખર્ચ નોંધો</h3>
+    <label><span class="lb">ખર્ચ કયો</span><select id="f1">
+      <option>સફાઈ / સ્વીપર</option><option>સિક્યોરિટી</option><option>લિફ્ટ મેન્ટેનન્સ</option>
+      <option>વીજળી બિલ</option><option>પાણી / બોર</option><option>બગીચો</option><option>રિપેરિંગ</option><option>બીજું</option></select></label>
+    <div class="two">
+      <label><span class="lb">રકમ (₹)</span><input id="f2" type="number" inputmode="numeric" placeholder="0"></label>
+      <label><span class="lb">તારીખ</span><input id="f3" type="date" value="${today()}"></label>
+    </div>
+    <label><span class="lb">નોંધ</span><input id="f4" placeholder="કોને ચૂકવ્યું, બિલ નંબર"></label>
+    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">સાચવો</button></div>`);
+  bind(async ()=>{
+    const amt=+$('#f2').value; if(!amt) return toast('રકમ લખો');
+    db.expenses.unshift({id:uid(),head:$('#f1').value,amount:amt,date:$('#f3').value||today(),note:$('#f4').value.trim()});
+    await save(); closeSheet(); tab='more'; render(); toast('ખર્ચ નોંધાયો');
+  });
+}
+
+/* ---------- PDF (via browser print → Save as PDF) ---------- */
+const PRINT_CSS = `
+@page{size:A4;margin:11mm}
+*{box-sizing:border-box}
+body{margin:0;font-family:'Noto Sans Gujarati','Karla',system-ui,sans-serif;color:#22283a;font-size:11.5px}
+h1{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.05em;font-size:20px;margin:0}
+.hd{border-top:3px solid #8A4C7D;border-bottom:1px solid #d9d7cf;padding:9px 0 10px;margin-bottom:14px;
+  display:flex;justify-content:space-between;align-items:flex-end;gap:12px}
+.hd .r{text-align:right;font-size:11px;color:#6c7488}
+.hd .sub{font-size:12px;color:#6c7488;margin-top:2px}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{text-align:left;font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.09em;
+  font-size:9px;color:#6c7488;border-bottom:1px solid #22283a;padding:6px 5px}
+td{padding:5px;border-bottom:1px solid #ececE4;vertical-align:top}
+td.n,th.n{text-align:right;font-family:'Courier Prime',monospace;white-space:nowrap}
+tr.tot td{border-top:1.5px solid #22283a;border-bottom:0;font-weight:700;padding-top:8px}
+.paid{color:#2F7D57} .due{color:#C24A38}
+.sum{display:flex;gap:10px;margin:14px 0 0;flex-wrap:wrap}
+.sum div{border:1px solid #d9d7cf;border-radius:3px;padding:8px 12px;min-width:120px}
+.sum b{display:block;font-family:'Courier Prime',monospace;font-size:15px}
+.sum span{font-size:10px;color:#6c7488}
+.slips{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.slip{border:1px solid #b9b7ae;border-radius:3px;padding:10px 11px;page-break-inside:avoid;break-inside:avoid}
+.slip .t{font-family:'Oswald',sans-serif;text-transform:uppercase;letter-spacing:.1em;font-size:8.5px;color:#8A4C7D;
+  border-bottom:1px dotted #b9b7ae;padding-bottom:5px;margin-bottom:6px;display:flex;justify-content:space-between}
+.slip .f{font-family:'Oswald',sans-serif;font-size:14px}
+.slip .nm{font-size:10.5px;color:#6c7488;margin-bottom:6px;min-height:14px}
+.slip .l{display:flex;justify-content:space-between;font-size:10.5px;padding:2px 0}
+.slip .l b{font-family:'Courier Prime',monospace}
+.slip .g{border-top:1px solid #22283a;margin-top:5px;padding-top:5px;font-size:12.5px;font-weight:700}
+.slip .st{margin-top:5px;font-size:9px;font-family:'Oswald',sans-serif;letter-spacing:.12em;text-transform:uppercase}
+.ft{margin-top:16px;padding-top:8px;border-top:1px solid #d9d7cf;font-size:9.5px;color:#8a90a0}
+@media print{.noprint{display:none}}
+`;
+function printDoc(title, body){
+  const old = document.getElementById('printFrame'); if (old) old.remove();
+  const f = document.createElement('iframe');
+  f.id='printFrame'; f.style.cssText='position:fixed;right:0;bottom:0;width:0;height:0;border:0;opacity:0';
+  document.body.appendChild(f);
+  const d = f.contentWindow.document;
+  d.open();
+  d.write(`<!doctype html><html lang="gu"><head><meta charset="utf-8"><title>${esc(title)}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600&family=Karla:wght@400;700&family=Courier+Prime:wght@400;700&family=Noto+Sans+Gujarati:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>${PRINT_CSS}</style></head><body>${body}</body></html>`);
+  d.close();
+  toast('પ્રિન્ટ ખૂલશે — “Save as PDF” પસંદ કરો');
+  setTimeout(()=>{ try{ f.contentWindow.focus(); f.contentWindow.print(); }catch(e){ toast('પ્રિન્ટ ખૂલી નહીં'); } }, 700);
+}
+const pHead = (sub, right) => `<div class="hd"><div><h1>${esc(db.society.name)}</h1>
+  <div class="sub">${sub}${db.society.address?' · '+esc(db.society.address):''}</div></div>
+  <div class="r">${right}</div></div>`;
+const pFoot = () => `<div class="ft">Royal Rejoice-3 સોસાયટી એપ · બનાવ્યું ${dateLabel(today())}</div>`;
+
+function pdfMonthList(){
+  const list = db.bills.filter(b=>b.month===billMonth)
+    .sort((a,b)=>(isShop(flatOf(a.flatId))-isShop(flatOf(b.flatId)))
+      || String(flatName(a.flatId)).localeCompare(String(flatName(b.flatId)),undefined,{numeric:true}));
+  if(!list.length) return toast('આ મહિનાનાં બિલ નથી');
+  const T = k => list.reduce((s,b)=>s+k(b),0);
+  const coll = list.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+  const pend = list.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+  const body = `<style>@page{size:A4 landscape;margin:9mm}</style>`
+    + pHead(`મેન્ટેનન્સ અને પાણી બિલ — ${monthLabel(billMonth)}`,
+        `${list.length} ફ્લેટ+શોપ · યુનિટ ભાવ ₹${db.society.unitRate} / શોપ ₹${db.society.shopUnitRate??3}<br>મેન્ટેનન્સ ${money(db.society.maint)} / શોપ ${money(db.society.shopMaint??500)}`)
+    + `<table><thead><tr>
+        <th>ફ્લેટ</th><th>નામ</th><th class="n">મેન્ટ.</th><th class="n">યુનિટ</th><th class="n">પાણી</th>
+        <th class="n">પાર્કિંગ</th><th class="n">અન્ય</th><th class="n">પેનલ્ટી</th>
+        <th class="n">આ મહિનો</th><th class="n">પાછલું બાકી</th><th class="n">કુલ ચૂકવવાના</th><th>સ્થિતિ</th></tr></thead><tbody>`
+    + list.map(b=>{ const arr=prevDue(b); return `<tr>
+        <td><b>${esc(flatName(b.flatId))}</b></td><td>${esc(flatOf(b.flatId)?.owner||'—')}</td>
+        <td class="n">${b.maint||0}</td><td class="n">${b.units||0}</td><td class="n">${waterAmt(b)}</td>
+        <td class="n">${b.parking||0}</td>
+        <td class="n">${b.other||0}${b.other&&b.otherNote?`<div style="font-size:8px;color:#8a90a0">${esc(b.otherNote)}</div>`:''}</td>
+        <td class="n">${b.penalty||0}</td>
+        <td class="n"><b>${monthCharges(b)}</b></td>
+        <td class="n ${arr?'due':''}">${arr||''}</td>
+        <td class="n"><b>${billTotal(b)}</b></td>
+        <td class="${b.status==='paid'?'paid':'due'}">${b.status==='paid'?'ચૂકવેલ '+dateLabel(b.paidOn):'બાકી'}</td></tr>`; }).join('')
+    + `<tr class="tot"><td colspan="2">કુલ</td><td class="n">${T(b=>b.maint||0)}</td><td class="n">${T(b=>b.units||0)}</td>
+        <td class="n">${T(waterAmt)}</td><td class="n">${T(b=>b.parking||0)}</td><td class="n">${T(b=>b.other||0)}</td>
+        <td class="n">${T(b=>b.penalty||0)}</td><td class="n">${T(monthCharges)}</td><td class="n">${T(prevDue)}</td>
+        <td class="n">${T(billTotal)}</td><td></td></tr></tbody></table>`
+    + `<div class="sum"><div><b class="paid">${money(coll)}</b><span>જમા થયું</span></div>
+        <div><b class="due">${money(pend)}</b><span>બાકી (પાછલા સાથે)</span></div>
+        <div><b>${T(b=>b.units||0)}</b><span>કુલ પાણી યુનિટ</span></div>
+        <div><b>${money(T(b=>(b.parking||0)+(b.other||0)+(b.penalty||0)))}</b><span>પાર્કિંગ + અન્ય + પેનલ્ટી</span></div></div>` + pFoot();
+  printDoc(`Royal Rejoice-3 ${billMonth}`, body);
+}
+
+const slipHTML = b => { const f = flatOf(b.flatId); const arr = prevDue(b); return `<div class="slip">
+  <div class="t"><span>Maintenance &amp; Water</span><span>${monthLabel(b.month)}</span></div>
+  <div class="f">${esc(f?.no||'')}</div><div class="nm">${esc(f?.owner||'')}</div>
+  <div class="l"><span>મેન્ટેનન્સ</span><b>${money(b.maint)}</b></div>
+  <div class="l"><span>પાણી ${b.units||0} × ₹${b.unitRate}</span><b>${money(waterAmt(b))}</b></div>
+  ${b.parking?`<div class="l"><span>પાર્કિંગ</span><b>${money(b.parking)}</b></div>`:''}
+  ${b.other?`<div class="l"><span>${esc(b.otherNote||'અન્ય')}</span><b>${money(b.other)}</b></div>`:''}
+  ${b.penalty?`<div class="l"><span>પેનલ્ટી</span><b>${money(b.penalty)}</b></div>`:''}
+  <div class="l g"><span>આ મહિનો</span><b>${money(monthCharges(b))}</b></div>
+  ${arr?`<div class="l"><span class="due">પાછલું બાકી</span><b class="due">${money(arr)}</b></div>
+       <div class="l g"><span>કુલ ચૂકવવાના</span><b>${money(billTotal(b))}</b></div>`:''}
+  <div class="st ${b.status==='paid'?'paid':'due'}">${b.status==='paid'?'ચૂકવેલ · '+dateLabel(b.paidOn)+' · '+esc(b.mode||''):'ચૂકવવાનું બાકી'}</div>
+</div>`; };
+
+function pdfSlips(){
+  const list = db.bills.filter(b=>b.month===billMonth)
+    .sort((a,b)=>String(flatName(a.flatId)).localeCompare(String(flatName(b.flatId)),undefined,{numeric:true}));
+  if(!list.length) return toast('આ મહિનાનાં બિલ નથી');
+  printDoc(`Slips ${billMonth}`,
+    pHead(`બિલ સ્લિપ — ${monthLabel(billMonth)}`, `${list.length} સ્લિપ<br>કાપીને આપવા માટે`)
+    + `<div class="slips">${list.map(slipHTML).join('')}</div>` + pFoot());
+}
+
+function pdfOneBill(id){
+  const b = db.bills.find(x=>x.id===id); if(!b) return;
+  const f = flatOf(b.flatId);
+  printDoc(`${f?.no} ${b.month}`,
+    pHead(`${b.status==='paid'?'ચૂકવણીની રસીદ':'બિલ'} — ${monthLabel(b.month)}`,
+      b.receiptNo?`રસીદ નં. #${b.receiptNo}`:'')
+    + `<table><tbody>
+      <tr><td>ફ્લેટ</td><td class="n"><b>${esc(f?.no)}</b></td></tr>
+      <tr><td>નામ</td><td class="n">${esc(f?.owner||'—')}</td></tr>
+      <tr><td>મહિનો</td><td class="n">${monthLabel(b.month)}</td></tr>
+      <tr><td>મેન્ટેનન્સ</td><td class="n">${money(b.maint)}</td></tr>
+      <tr><td>પાણી · ${b.units||0} યુનિટ × ₹${b.unitRate}</td><td class="n">${money(waterAmt(b))}</td></tr>
+      ${b.parking?`<tr><td>પાર્કિંગ</td><td class="n">${money(b.parking)}</td></tr>`:''}
+      ${b.other?`<tr><td>${esc(b.otherNote||'અન્ય ચાર્જ')}</td><td class="n">${money(b.other)}</td></tr>`:''}
+      ${b.penalty?`<tr><td>પેનલ્ટી</td><td class="n">${money(b.penalty)}</td></tr>`:''}
+      <tr class="tot"><td>આ મહિનાનું બિલ</td><td class="n">${money(monthCharges(b))}</td></tr>
+      ${prevDue(b)?`<tr><td class="due">પાછલું બાકી</td><td class="n due">${money(prevDue(b))}</td></tr>
+        <tr class="tot"><td>કુલ ચૂકવવાના</td><td class="n">${money(billTotal(b))}</td></tr>`:''}
+      <tr><td>સ્થિતિ</td><td class="n ${b.status==='paid'?'paid':'due'}">${b.status==='paid'?'ચૂકવેલ · '+dateLabel(b.paidOn)+' · '+esc(b.mode||''):'બાકી'}</td></tr>
+      </tbody></table>` + pFoot());
+}
+
+function pdfMyStatement(){
+  const f = myFlat(); if(!f) return;
+  const mine = db.bills.filter(b=>b.flatId===f.id).sort((a,b)=>a.month.localeCompare(b.month));
+  if(!mine.length) return toast('હજી બિલ નથી');
+  const paidT = mine.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
+  const dueT = mine.filter(b=>isDue(b)).reduce((s,b)=>s+billTotal(b),0);
+  printDoc(`${f.no} statement`,
+    pHead(`ફ્લેટ ${esc(f.no)} — બિલ ઇતિહાસ`, `${esc(f.owner||'')}<br>${mine.length} બિલ`)
+    + `<table><thead><tr><th>મહિનો</th><th class="n">મેન્ટ.</th><th class="n">યુનિટ</th><th class="n">પાણી</th><th class="n">પાર્કિંગ</th><th class="n">અન્ય</th><th class="n">પેનલ્ટી</th><th class="n">કુલ</th><th>સ્થિતિ</th></tr></thead><tbody>`
+    + mine.map(b=>`<tr><td>${monthLabel(b.month)}</td><td class="n">${b.maint||0}</td><td class="n">${b.units||0}</td>
+        <td class="n">${waterAmt(b)}</td><td class="n">${b.parking||0}</td>
+        <td class="n">${b.other||0}${b.other&&b.otherNote?`<div style="font-size:8px;color:#8a90a0">${esc(b.otherNote)}</div>`:''}</td>
+        <td class="n">${b.penalty||0}</td><td class="n"><b>${billTotal(b)}</b></td>
+        <td class="${b.status==='paid'?'paid':'due'}">${b.status==='paid'?'ચૂકવેલ '+dateLabel(b.paidOn):'બાકી'}</td></tr>`).join('')
+    + `<tr class="tot"><td colspan="7">કુલ</td><td class="n">${mine.reduce((s,b)=>s+billTotal(b),0)}</td><td></td></tr></tbody></table>`
+    + `<div class="sum"><div><b class="paid">${money(paidT)}</b><span>ચૂકવ્યું</span></div>
+        <div><b class="due">${money(dueT)}</b><span>બાકી</span></div></div>` + pFoot());
+}
+
+/* ---------- share ---------- */
+function shareText(text, phone){
+  const p = String(phone||'').replace(/\D/g,'').slice(-10);
+  const url = p.length===10 ? 'https://wa.me/91'+p+'?text='+encodeURIComponent(text)
+                            : 'https://wa.me/?text='+encodeURIComponent(text);
+  window.open(url,'_blank');
+}
+function remindAll(){
+  const list = db.bills.filter(b=>b.month===billMonth && isDue(b));
+  if(!list.length) return toast('આ મહિને કોઈ બાકી નથી');
+  const t = `🔔 ${db.society.name}\n${monthLabel(billMonth)} નું બિલ બાકી છે:\n\n`
+    + list.map(b=>`${flatName(b.flatId)} — ${money(billTotal(b))} (${b.units||0} યુનિટ)`).join('\n')
+    + `\n\nકુલ બાકી: ${money(list.reduce((s,b)=>s+billTotal(b),0))}\nવહેલી તકે ચૂકવવા વિનંતી 🙏`;
+  shareText(t);
+}
+
+/* ---------- backup ---------- */
+function backup(){
+  const blob=new Blob([JSON.stringify(db,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download='royal-rejoice-3-'+today()+'.json'; a.click(); URL.revokeObjectURL(a.href);
+  toast('બેકઅપ ફાઇલ ડાઉનલોડ થઈ');
+}
+function restore(){
+  const inp=document.createElement('input'); inp.type='file'; inp.accept='application/json,.json';
+  inp.onchange=()=>{ const file=inp.files[0]; if(!file) return;
+    const r=new FileReader();
+    r.onload=async()=>{ try{
+        const d=JSON.parse(r.result); if(!d||!d.society) throw 0;
+        const keepAuth = db.auth;
+        db=Object.assign({society:{name:'Royal Rejoice - 3',address:'',maint:800,unitRate:10,penalty:100,shopMaint:500,shopUnitRate:3},auth:keepAuth,flats:[],bills:[],notices:[],complaints:[],visitors:[],expenses:[]},d);
+        if(!db.auth || !db.auth.pin) db.auth = keepAuth;
+        await save(); render(); toast('બેકઅપ રિસ્ટોર થયો');
+      }catch(err){ toast('આ ફાઇલ વાંચી શકાઈ નહીં'); } };
+    r.readAsText(file); };
+  inp.click();
+}
+
+/* ---------- boot ---------- */
+(async function(){
+  const saved = await store.get();
+  if (saved && saved.flats && saved.flats.length) db = Object.assign(db, saved);
+  else db.flats = SEED.map(s=>({id:uid(), ...s}));
+  if (!db.auth) db.auth = { pin:'', admin:'' };
+  if (db.society.shopMaint == null) db.society.shopMaint = 500;
+  if (db.society.shopUnitRate == null) db.society.shopUnitRate = 3;
+  // one-time: add the shops to installs created before shops existed
+  if (db.v !== 2){
+    SEED.filter(x=>x.kind==='shop').forEach(sh=>{
+      if (!db.flats.some(f=>f.no === sh.no)) db.flats.push({id:uid(), ...sh});
+    });
+    db.flats.forEach(f=>{ if(!f.kind) f.kind = 'flat'; });
+    db.v = 2; await save();
+  }
+  if (!saved) await save();
+
+  const s = await sess.get();
+  if (s && s.role === 'admin' && db.auth.pin) session = s;
+  else if (s && s.role === 'member' && flatOf(s.flatId)) session = s;
+
+  if (session) render(); else renderGate();
+})();
+
+/* ---------- offline service worker (only on https, not file://) ---------- */
+if ('serviceWorker' in navigator && location.protocol === 'https:') {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(()=>{});
+  });
+}
+</script>
+</body>
+</html>
