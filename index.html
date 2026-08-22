@@ -362,6 +362,7 @@ function render(){
 }
 
 /* ============================ ACCOUNTS + LOGIN GATE ============================ */
+const APP_VERSION = 'v3.0';
 const GHEAD = `<div class="gmark">Society Manager</div><div class="glogo">Royal Rejoice-3</div><div class="grule"></div>`;
 const ADMIN_DEFAULT = { phone:'2911', pin:'2911' };
 const GUARD_DEFAULT = { phone:'1911', pin:'1911' };
@@ -429,7 +430,8 @@ function renderGate(){
       <div class="err" id="ge"></div>
       <button class="btn full" id="gok">લોગિન</button>
       <div class="btnrow"><button class="btn ghost full" data-g="signup">નવા છો? સાઇન અપ કરો</button></div>
-      <div class="foot">PIN ભૂલી ગયા હો તો એડમિનને કહો — એ રીસેટ કરી આપશે.</div>`;
+      <div class="foot">PIN ભૂલી ગયા હો તો એડમિનને કહો — એ રીસેટ કરી આપશે.<br>
+        <span style="opacity:.65">${APP_VERSION}</span></div>`;
     const go = async () => {
       const u = userByPhone($('#gnum').value);
       const p = $('#gp').value.trim();
@@ -452,7 +454,8 @@ function renderGate(){
     <button class="btn full" id="gok">આગળ વધો</button>
     <div class="btnrow"><button class="btn ghost full" data-g="login">પહેલેથી ખાતું છે? લોગિન કરો</button></div>
     <div class="foot">એડમિન અને સિક્યોરિટી સાઇન અપ કરવાનું નથી — એમનાં ખાતાં પહેલેથી છે, સીધા લોગિન કરો.<br>
-      નંબર યાદીમાં ન હોય કે બદલાયો હોય તો એડમિનને કહી અપડેટ કરાવો.</div>`;
+      નંબર યાદીમાં ન હોય કે બદલાયો હોય તો એડમિનને કહી અપડેટ કરાવો.<br>
+      <span style="opacity:.65">${APP_VERSION} · સાઇન અપ લોગિન</span></div>`;
   const go = async () => {
     const n = digits($('#gnum').value);
     if(n.length !== 10) return gerr('૧૦ આંકડાનો મોબાઇલ નંબર લખો');
@@ -970,6 +973,15 @@ function vData(){
       <div class="row"><div class="grow"><div class="title">ફરિયાદ</div></div><div class="amt">${db.complaints.length}</div></div>
       <div class="row"><div class="grow"><div class="title">મુલાકાતી</div></div><div class="amt">${db.visitors.length}</div></div>
       <div class="row"><div class="grow"><div class="title">ખર્ચ નોંધ</div></div><div class="amt">${db.expenses.length}</div></div>
+      <div class="row"><div class="grow"><div class="title">એપ વર્ઝન</div>
+        <div class="meta">સાઇન અપ + નંબર/PIN લોગિન</div></div><div class="amt">${APP_VERSION}</div></div>
+    </div>
+
+    <div class="eyebrow">નવું વર્ઝન</div>
+    <div class="card">
+      <p class="muted" style="margin:0">જૂનું પાનું દેખાય તો નીચેનું બટન દબાવો — એપ કેશ સાફ કરીને
+        નવેસરથી ખૂલશે. તમારો ડેટા જશે નહીં.</p>
+      <div class="btnrow"><button class="btn full" data-a="hardreload">નવેસરથી ખોલો (કેશ સાફ)</button></div>
     </div>
 
     <div class="eyebrow">ડેટા ક્યાં રહે છે</div>
@@ -1024,6 +1036,18 @@ document.addEventListener('click', async e => {
   if (a==='delnotice'){ if(confirm('આ નોટિસ કાઢી નાખવી છે?')){ db.notices=db.notices.filter(n=>n.id!==id); await save(); render(); } return; }
   if (a==='sharenotice'){ const n=db.notices.find(n=>n.id===id); shareText(`📌 ${db.society.name}\n\n${n.title}\n${n.body}\n\n— ${dateLabel(n.date)}`); return; }
   if (a==='godata'){ tab='data'; render(); window.scrollTo({top:0}); return; }
+  if (a==='hardreload'){
+    toast('કેશ સાફ થાય છે…');
+    try{
+      if (window.caches) { const ks = await caches.keys(); await Promise.all(ks.map(k=>caches.delete(k))); }
+      if (navigator.serviceWorker){
+        const rs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(rs.map(r=>r.unregister()));
+      }
+    }catch(err){}
+    setTimeout(()=>location.reload(true), 600);
+    return;
+  }
   if (a==='remindall') return remindAll();
   if (a==='loginhelp') return shareText(`📱 ${db.society.name} — સોસાયટી એપ\n\n1) એપ ખોલો — પહેલું પાનું "સાઇન અપ" આવશે\n2) સોસાયટીમાં નોંધાવેલો તમારો મોબાઇલ નંબર લખો\n3) તમારો ફ્લેટ આપોઆપ જોડાઈ જશે\n4) તમારો પોતાનો ૪ આંકડાનો PIN બનાવો\n\nપછી દર વખતે નંબર + PIN થી લોગિન.\nતમે તમારાં બિલ, રસીદ, નોટિસ જોઈ શકશો અને ફરિયાદ નોંધાવી શકશો.\n\nનંબર ન મળે તો મને કહેજો — યાદીમાં અપડેટ કરી દઈશ.`);
   if (a==='report'){
@@ -1728,7 +1752,20 @@ window.RR3 = { get db(){return db}, set db(v){db=v}, get session(){return sessio
 /* ---------- offline service worker (only on https, not file://) ---------- */
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            toast('નવું વર્ઝન આવ્યું — ખૂલી રહ્યું છે');
+            nw.postMessage('skipWaiting');
+            setTimeout(()=>location.reload(), 900);
+          }
+        });
+      });
+    }).catch(()=>{});
   });
 }
 </script>
