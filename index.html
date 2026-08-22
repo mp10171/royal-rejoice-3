@@ -226,7 +226,7 @@ let db = {
   flats:[], bills:[], notices:[], complaints:[], visitors:[], expenses:[]
 };
 let session = null;     // {role:'admin'} | {role:'member', flatId}
-let gateStep = 'choose';
+let gateStep = 'signup';
 let tab = 'home';
 let billMonth = null;
 let flatQuery = '';
@@ -337,7 +337,7 @@ function render(){
   const f = myFlat();
   $('#pvbar').hidden = !session.preview;
   if (session.preview) $('#pvFlat').textContent = isGuard()
-    ? (db.auth.guard || 'સિક્યોરિટી')
+    ? (guardUser()?.name || 'સિક્યોરિટી')
     : `${f?.no||''} · ${f?.owner||''}`;
   $('#roleChip').textContent = isAdmin() ? 'એડમિન' : isGuard() ? 'સિક્યોરિટી'
     : (session.preview ? 'પ્રીવ્યૂ' : esc(f?.no || 'રહેવાસી'));
@@ -348,7 +348,7 @@ function render(){
     const t = today();
     const inToday = db.visitors.filter(v=>v.date===t).length;
     const inside = db.visitors.filter(v=>!v.out).length;
-    $('#socSub').textContent = `${esc(db.auth.guard||'સિક્યોરિટી')} · આજે ${inToday} એન્ટ્રી · ${inside} અંદર`;
+    $('#socSub').textContent = `${esc(guardUser()?.name||'સિક્યોરિટી')} · આજે ${inToday} એન્ટ્રી · ${inside} અંદર`;
   } else {
     const myDue = db.bills.filter(b=>b.flatId===session.flatId && isDue(b)).reduce((s,b)=>s+billTotal(b),0);
     $('#socSub').textContent = `${f?.owner||''} · ${myDue ? 'બાકી '+money(myDue) : 'કોઈ બાકી નથી'}`;
@@ -361,118 +361,126 @@ function render(){
   (views[tab] || views.home)();
 }
 
-/* ============================ LOGIN GATE ============================ */
+/* ============================ ACCOUNTS + LOGIN GATE ============================ */
 const GHEAD = `<div class="gmark">Society Manager</div><div class="glogo">Royal Rejoice-3</div><div class="grule"></div>`;
+const ADMIN_DEFAULT = { phone:'2911', pin:'2911' };
+const GUARD_DEFAULT = { phone:'1911', pin:'1911' };
+let pendingFlat = null;   // flat matched during signup
+
+function ensureUsers(){
+  if (!Array.isArray(db.users)) db.users = [];
+  const old = db.auth || {};
+  if (!db.users.some(u=>u.role==='admin'))
+    db.users.push({ id:uid(), role:'admin', phone:ADMIN_DEFAULT.phone,
+      pin: old.pin || ADMIN_DEFAULT.pin, name: old.admin || 'એડમિન', flatId:null });
+  if (!db.users.some(u=>u.role==='guard'))
+    db.users.push({ id:uid(), role:'guard', phone:GUARD_DEFAULT.phone,
+      pin: old.guardPin || GUARD_DEFAULT.pin, name: old.guard || 'ગેટ સિક્યોરિટી', flatId:null });
+}
+const digits = v => String(v||'').replace(/\D/g,'');
+const userByPhone = p => db.users.find(u => u.phone === digits(p));
+const adminUser = () => db.users.find(u=>u.role==='admin');
+const guardUser = () => db.users.find(u=>u.role==='guard');
+const memberUsers = () => db.users.filter(u=>u.role==='member');
+const flatsForPhone = p => db.flats.filter(f => digits(f.phone) && digits(f.phone) === digits(p));
+const usingDefaults = () => (adminUser()?.pin === ADMIN_DEFAULT.pin) || (guardUser()?.pin === GUARD_DEFAULT.pin);
 
 function renderGate(){
   const g = $('#gate'); g.hidden = false;
-  if (!db.auth.pin) gateStep = 'setup';
+  ensureUsers();
 
-  if (gateStep === 'setup'){
+  /* ---------- step 2 of signup: choose a PIN ---------- */
+  if (gateStep === 'setpin' && pendingFlat){
     g.innerHTML = `${GHEAD}
-      <h2>પહેલી વાર — PIN સેટ કરો</h2>
-      <p>એપમાં ત્રણ લોગિન છે: એડમિન, સોસાયટી મેમ્બર અને સિક્યોરિટી. મેમ્બર પોતાના મોબાઇલ નંબરથી લોગિન કરે, બાકી બેને PIN જોઈએ.</p>
-      <label><span class="lb">એડમિનનું નામ</span><input id="gn" placeholder="દા.ત. સેક્રેટરી પટેલ સાહેબ"></label>
-      <label><span class="lb">એડમિન PIN (૪ આંકડા)</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
-      <label><span class="lb">એડમિન PIN ફરી લખો</span><input id="gp2" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
-      <label><span class="lb">સિક્યોરિટી PIN (વોચમેન માટે — અલગ રાખો)</span><input id="gp3" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <h2>તમારો PIN બનાવો</h2>
+      <p>નંબર મળી ગયો. હવે ૪ આંકડાનો PIN નક્કી કરો — દર વખતે એનાથી લોગિન થશે.</p>
+      <div class="role" style="margin-top:14px">
+        <b>${esc(pendingFlat.no)} · ${esc(pendingFlat.owner||'નામ નથી')}</b>
+        <span>${esc(pendingFlat.phone)}</span>
+      </div>
+      <label><span class="lb">નવો PIN (૪ આંકડા)</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+      <label><span class="lb">PIN ફરી લખો</span><input id="gp2" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
       <div class="err" id="ge"></div>
-      <button class="btn full" id="gok">સેટ કરો અને ચાલુ કરો</button>
-      <div class="foot">PIN ભૂલી જવાય તો રીસેટ કરવાનો રસ્તો નથી — બેકઅપ ફાઇલ સાચવી રાખજો.</div>`;
-    $('#gok').addEventListener('click', async ()=>{
-      const p=$('#gp').value.trim(), p2=$('#gp2').value.trim(), g3=$('#gp3').value.trim();
-      if(!/^\d{4}$/.test(p)) return gerr('એડમિન PIN બરાબર ૪ આંકડાનો હોવો જોઈએ');
-      if(p!==p2) return gerr('બંને એડમિન PIN સરખા નથી');
-      if(!/^\d{4}$/.test(g3)) return gerr('સિક્યોરિટી PIN પણ ૪ આંકડાનો લખો');
-      if(g3===p) return gerr('સિક્યોરિટી PIN એડમિન કરતાં અલગ રાખો');
-      db.auth = { pin:p, admin:$('#gn').value.trim() || 'એડમિન', guardPin:g3, guard:'ગેટ સિક્યોરિટી' };
-      await save(); await login({role:'admin'});
-    });
+      <button class="btn full" id="gok">ખાતું બનાવો</button>
+      <div class="btnrow"><button class="btn ghost full" data-g="signup">પાછા જાઓ</button></div>`;
+    const go = async () => {
+      const p=$('#gp').value.trim(), p2=$('#gp2').value.trim();
+      if(!/^\d{4}$/.test(p)) return gerr('PIN બરાબર ૪ આંકડાનો હોવો જોઈએ');
+      if(p!==p2) return gerr('બંને PIN સરખા નથી');
+      const u = { id:uid(), role:'member', phone:digits(pendingFlat.phone), pin:p,
+                  name:pendingFlat.owner||'', flatId:pendingFlat.id, joined:today() };
+      db.users.push(u); await save();
+      const f = pendingFlat; pendingFlat = null;
+      await login({ role:'member', flatId:f.id, userId:u.id });
+    };
+    $('#gok').addEventListener('click', go);
+    $('#gp2').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
     focusFix();
     return;
   }
 
-  if (gateStep === 'admin'){
+  /* ---------- login ---------- */
+  if (gateStep === 'login'){
     g.innerHTML = `${GHEAD}
-      <h2>એડમિન લોગિન</h2>
-      <p>${esc(db.auth.admin||'એડમિન')} — તમારો ૪ આંકડાનો PIN લખો.</p>
+      <h2>લોગિન</h2>
+      <p>તમારો મોબાઇલ નંબર અને PIN લખો.</p>
+      <label><span class="lb">મોબાઇલ નંબર</span><input id="gnum" type="tel" inputmode="numeric" maxlength="10" placeholder="98XXXXXXXX"></label>
       <label><span class="lb">PIN</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
       <div class="err" id="ge"></div>
       <button class="btn full" id="gok">લોગિન</button>
-      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>`;
-    const go = async ()=>{
-      if($('#gp').value.trim() !== db.auth.pin) return gerr('PIN ખોટો છે');
-      await login({role:'admin'});
+      <div class="btnrow"><button class="btn ghost full" data-g="signup">નવા છો? સાઇન અપ કરો</button></div>
+      <div class="foot">PIN ભૂલી ગયા હો તો એડમિનને કહો — એ રીસેટ કરી આપશે.</div>`;
+    const go = async () => {
+      const u = userByPhone($('#gnum').value);
+      const p = $('#gp').value.trim();
+      if(!u) return gerr('આ નંબરનું ખાતું નથી — પહેલાં સાઇન અપ કરો');
+      if(u.pin !== p) return gerr('PIN ખોટો છે');
+      await login({ role:u.role, flatId:u.flatId||null, userId:u.id });
     };
     $('#gok').addEventListener('click', go);
     $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
-    focusFix();
+    setTimeout(()=>{ const i=$('#gnum'); if(i) i.focus(); }, 120);
     return;
   }
 
-  if (gateStep === 'member'){
-    const opts = db.flats.slice().sort((a,b)=>String(a.no).localeCompare(String(b.no),undefined,{numeric:true}))
-      .map(f=>`<option value="${f.id}">${esc(f.no)} — ${esc(f.owner||'')}</option>`).join('');
-    g.innerHTML = `${GHEAD}
-      <h2>રહેવાસી લોગિન</h2>
-      <p>તમારો ફ્લેટ પસંદ કરો અને નોંધાયેલા મોબાઇલ નંબરના છેલ્લા ૪ આંકડા લખો.</p>
-      <label><span class="lb">ફ્લેટ</span><select id="gf">${opts}</select></label>
-      <label><span class="lb">મોબાઇલના છેલ્લા ૪ આંકડા</span><input id="gp" class="pin" type="tel" inputmode="numeric" maxlength="4" placeholder="••••"></label>
-      <div class="err" id="ge"></div>
-      <button class="btn full" id="gok">લોગિન</button>
-      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>
-      <div class="foot">નંબર નોંધાયેલ ન હોય કે બદલાયો હોય તો એડમિનને કહી અપડેટ કરાવો.</div>`;
-    const go = async ()=>{
-      const f = flatOf($('#gf').value);
-      if(!f.phone) return gerr('આ ફ્લેટનો મોબાઇલ નંબર નોંધાયેલ નથી — એડમિનનો સંપર્ક કરો');
-      if($('#gp').value.trim() !== f.phone.slice(-4)) return gerr('આંકડા મળતા નથી');
-      await login({role:'member', flatId:f.id});
-    };
-    $('#gok').addEventListener('click', go);
-    $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
-    focusFix();
-    return;
-  }
-
-  if (gateStep === 'guard'){
-    g.innerHTML = `${GHEAD}
-      <h2>સિક્યોરિટી લોગિન</h2>
-      <p>${db.auth.guardPin ? esc(db.auth.guard||'ગેટ સિક્યોરિટી')+' — ૪ આંકડાનો PIN લખો.'
-        : 'હજી સિક્યોરિટી PIN સેટ થયો નથી. એડમિનને કહો — એડમિન ટૅબમાંથી સેટ થશે.'}</p>
-      ${db.auth.guardPin?`<label><span class="lb">PIN</span><input id="gp" class="pin" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
-      <div class="err" id="ge"></div>
-      <button class="btn full" id="gok">લોગિન</button>`:'<div style="height:10px"></div>'}
-      <div class="btnrow"><button class="btn ghost full" data-g="choose">પાછા જાઓ</button></div>
-      <div class="foot">સિક્યોરિટી ફક્ત મુલાકાતીની એન્ટ્રી, ડિરેક્ટરી અને નોટિસ જોઈ શકે. બિલ કે પૈસાની કોઈ વિગત નહીં.</div>`;
-    if (db.auth.guardPin){
-      const go = async ()=>{
-        if($('#gp').value.trim() !== db.auth.guardPin) return gerr('PIN ખોટો છે');
-        await login({role:'guard'});
-      };
-      $('#gok').addEventListener('click', go);
-      $('#gp').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
-      focusFix();
-    }
-    return;
-  }
-
+  /* ---------- signup (first page) ---------- */
   g.innerHTML = `${GHEAD}
-    <h2>તમે કોણ છો?</h2>
-    <p>દરેકને પોતાના કામ પૂરતું જ દેખાય છે.</p>
-    <button class="role" data-g="admin"><b>એડમિન / કમિટી</b><span>બિલ, વસૂલી, ખર્ચ, નોટિસ — બધું</span></button>
-    <button class="role" data-g="member"><b>સોસાયટી મેમ્બર</b><span>મારાં બિલ, રસીદ, નોટિસ, ફરિયાદ</span></button>
-    <button class="role" data-g="guard"><b>સિક્યોરિટી / ગેટ</b><span>મુલાકાતીની એન્ટ્રી, ડિરેક્ટરી, નોટિસ</span></button>
-    <div class="foot">આ લોગિન ફોનમાં જ ચકાસાય છે — ડેટા ક્યાંય મોકલાતો નથી. એક ફોનમાં એક જ વખત લોગિન કરવાનું, પછી એપ સીધી ખૂલશે.</div>`;
+    <h2>સાઇન અપ</h2>
+    <p>સોસાયટીમાં નોંધાયેલો તમારો મોબાઇલ નંબર લખો. નંબર મળશે એટલે તમારો ફ્લેટ આપોઆપ જોડાઈ જશે.</p>
+    <label><span class="lb">મોબાઇલ નંબર (૧૦ આંકડા)</span><input id="gnum" type="tel" inputmode="numeric" maxlength="10" placeholder="98XXXXXXXX"></label>
+    <div class="err" id="ge"></div>
+    <button class="btn full" id="gok">આગળ વધો</button>
+    <div class="btnrow"><button class="btn ghost full" data-g="login">પહેલેથી ખાતું છે? લોગિન કરો</button></div>
+    <div class="foot">એડમિન અને સિક્યોરિટી સાઇન અપ કરવાનું નથી — એમનાં ખાતાં પહેલેથી છે, સીધા લોગિન કરો.<br>
+      નંબર યાદીમાં ન હોય કે બદલાયો હોય તો એડમિનને કહી અપડેટ કરાવો.</div>`;
+  const go = async () => {
+    const n = digits($('#gnum').value);
+    if(n.length !== 10) return gerr('૧૦ આંકડાનો મોબાઇલ નંબર લખો');
+    if(userByPhone(n)){
+      gateStep = 'login'; renderGate();
+      setTimeout(()=>{ const i=$('#gnum'); if(i) i.value = n; gerr('આ નંબર પહેલેથી નોંધાયેલો છે — PIN લખીને લોગિન કરો'); }, 60);
+      return;
+    }
+    const matches = flatsForPhone(n);
+    if(!matches.length) return gerr('આ નંબર સોસાયટીની યાદીમાં નથી — એડમિનનો સંપર્ક કરો');
+    pendingFlat = matches[0];
+    gateStep = 'setpin'; renderGate();
+  };
+  $('#gok').addEventListener('click', go);
+  $('#gnum').addEventListener('keydown', e=>{ if(e.key==='Enter') go(); });
+  setTimeout(()=>{ const i=$('#gnum'); if(i) i.focus(); }, 120);
 }
+
 function gerr(m){ const e=$('#ge'); if(e){ e.textContent=m; } }
 function focusFix(){ const i=$('#gate .pin'); if(i) setTimeout(()=>i.focus(),120); }
 $('#gate').addEventListener('click', e=>{
   const b = e.target.closest('[data-g]'); if(!b) return;
   gateStep = b.dataset.g; renderGate();
 });
+
 async function login(s){
   session = s; await sess.set(s);
-  tab = 'home'; gateStep = 'choose';
+  tab = 'home'; gateStep = 'signup';
   $('#gate').hidden = true;
   render();
   toast(s.role==='admin' ? 'એડમિન તરીકે લોગિન થયું'
@@ -482,7 +490,7 @@ async function login(s){
 async function logout(){
   if(!confirm('લોગ આઉટ કરવું છે?')) return;
   session = null; await sess.set(null);
-  gateStep = 'choose'; renderGate();
+  gateStep = 'login'; renderGate();
 }
 
 /* ============================ MEMBER VIEWS ============================ */
@@ -887,17 +895,23 @@ function vMore(){
       <div class="btnrow"><button class="btn full" data-a="settings">દર બદલો</button></div>
     </div>
 
-    <div class="eyebrow">એડમિન ખાતું</div>
+    <div class="eyebrow">ખાતાં · લોગિન</div>
+    ${usingDefaults()?`<div class="card" style="border-color:var(--due);margin-bottom:10px">
+      <p class="muted" style="margin:0;color:var(--due)"><b>ડિફોલ્ટ PIN હજી બદલ્યો નથી.</b>
+        એડમિન 2911 / 2911 અને સિક્યોરિટી 1911 / 1911 — આ સૌ કોઈ જાણી શકે. નીચેથી બદલી નાખો.</p></div>`:''}
     <div class="card">
-      <div class="row" style="padding-top:0"><div class="grow"><div class="title">${esc(db.auth.admin||'એડમિન')}</div>
-        <div class="meta">PIN થી લોગિન · ફક્ત આ ફોનમાં</div></div>
-        <button class="btn ghost sm" data-a="changepin">PIN બદલો</button></div>
-      <div class="row"><div class="grow"><div class="title">રહેવાસી લોગિન</div>
-        <div class="meta">ફ્લેટ નંબર + મોબાઇલના છેલ્લા ૪ આંકડા</div></div>
-        <button class="btn ghost sm" data-a="loginhelp">સંદેશ મોકલો</button></div>
-      <div class="row"><div class="grow"><div class="title">સિક્યોરિટી લોગિન</div>
-        <div class="meta">${db.auth.guardPin?'PIN સેટ થયેલો છે':'હજી PIN સેટ નથી — વોચમેન લોગિન નહીં કરી શકે'}</div></div>
-        <button class="btn ${db.auth.guardPin?'ghost':'stamp'} sm" data-a="guardpin">${db.auth.guardPin?'PIN બદલો':'PIN સેટ કરો'}</button></div>
+      <div class="row" style="padding-top:0"><div class="grow"><div class="title">એડમિન — ${esc(adminUser()?.name||'એડમિન')}</div>
+        <div class="meta">નંબર ${esc(adminUser()?.phone||'—')} · PIN ${adminUser()?.pin===ADMIN_DEFAULT.pin?'2911 (ડિફોલ્ટ)':'બદલાયેલો'}</div></div>
+        <button class="btn ghost sm" data-a="acctadmin">બદલો</button></div>
+      <div class="row"><div class="grow"><div class="title">સિક્યોરિટી — ${esc(guardUser()?.name||'ગેટ')}</div>
+        <div class="meta">નંબર ${esc(guardUser()?.phone||'—')} · PIN ${guardUser()?.pin===GUARD_DEFAULT.pin?'1911 (ડિફોલ્ટ)':'બદલાયેલો'}</div></div>
+        <button class="btn ghost sm" data-a="acctguard">બદલો</button></div>
+      <div class="row"><div class="grow"><div class="title">નોંધાયેલા રહેવાસી</div>
+        <div class="meta">${memberUsers().length} જણે સાઇન અપ કર્યું છે</div></div>
+        <button class="btn ghost sm" data-a="members">જુઓ</button></div>
+      <div class="row"><div class="grow"><div class="title">સાઇન અપની સૂચના</div>
+        <div class="meta">ગ્રુપમાં મોકલવાનો સંદેશ</div></div>
+        <button class="btn ghost sm" data-a="loginhelp">મોકલો</button></div>
       <div class="row"><div class="grow"><div class="title">બીજી બાજુ જુઓ</div>
         <div class="meta">મેમ્બર કે સિક્યોરિટીને એપ કેવી દેખાય છે</div></div>
         <button class="btn stamp sm" data-a="preview">પ્રીવ્યૂ</button></div>
@@ -986,13 +1000,14 @@ document.addEventListener('click', async e => {
   if (a==='exitpreview'){ session = {role:'admin'}; tab='more'; render(); toast('એડમિન બાજુ પાછી'); return; }
   if (a==='preview') return formPreview();
   if (a==='guardpreview'){ session = {role:'guard', preview:true}; tab='home'; render(); return; }
-  if (a==='guardpin') return formGuardPin();
   if (a==='logout') return logout();
   if (a==='pdflist') return pdfMonthList();
   if (a==='pdfslips') return pdfSlips();
   if (a==='pdfbill') return pdfOneBill(id);
   if (a==='pdfmine') return pdfMyStatement();
-  if (a==='changepin') return formPin();
+  if (a==='acctadmin') return formAccount('admin');
+  if (a==='acctguard') return formAccount('guard');
+  if (a==='members') return formMembers();
   if (a==='settings') return formSettings();
   if (a==='addflat') return formFlat();
   if (a==='editflat') return formFlat(id);
@@ -1010,7 +1025,7 @@ document.addEventListener('click', async e => {
   if (a==='sharenotice'){ const n=db.notices.find(n=>n.id===id); shareText(`📌 ${db.society.name}\n\n${n.title}\n${n.body}\n\n— ${dateLabel(n.date)}`); return; }
   if (a==='godata'){ tab='data'; render(); window.scrollTo({top:0}); return; }
   if (a==='remindall') return remindAll();
-  if (a==='loginhelp') return shareText(`📱 ${db.society.name} — સોસાયટી એપ\n\nએપ ખોલીને "રહેવાસી" પસંદ કરો.\nતમારો ફ્લેટ નંબર પસંદ કરો અને સોસાયટીમાં નોંધાયેલા મોબાઇલ નંબરના છેલ્લા ૪ આંકડા લખો.\n\nપછી તમે તમારાં બિલ, રસીદ, નોટિસ જોઈ શકશો અને ફરિયાદ નોંધાવી શકશો.`);
+  if (a==='loginhelp') return shareText(`📱 ${db.society.name} — સોસાયટી એપ\n\n1) એપ ખોલો — પહેલું પાનું "સાઇન અપ" આવશે\n2) સોસાયટીમાં નોંધાવેલો તમારો મોબાઇલ નંબર લખો\n3) તમારો ફ્લેટ આપોઆપ જોડાઈ જશે\n4) તમારો પોતાનો ૪ આંકડાનો PIN બનાવો\n\nપછી દર વખતે નંબર + PIN થી લોગિન.\nતમે તમારાં બિલ, રસીદ, નોટિસ જોઈ શકશો અને ફરિયાદ નોંધાવી શકશો.\n\nનંબર ન મળે તો મને કહેજો — યાદીમાં અપડેટ કરી દઈશ.`);
   if (a==='report'){
     const mk=monthKey(), mb=db.bills.filter(b=>b.month===mk);
     const coll=mb.filter(b=>b.status==='paid').reduce((s,b)=>s+billTotal(b),0);
@@ -1023,7 +1038,7 @@ document.addEventListener('click', async e => {
   if (a==='restore') return restore();
   if (a==='wipe'){
     if(confirm('બધો ડેટા કાયમ ભૂંસાઈ જશે (ફ્લેટની યાદી ફરી ભરાઈ જશે). ચાલુ રાખવું?')){
-      db = { society:{name:'Royal Rejoice - 3',address:'',maint:800,unitRate:10,penalty:100,shopMaint:500,shopUnitRate:3}, auth:db.auth, v:2,
+      db = { society:{name:'Royal Rejoice - 3',address:'',maint:800,unitRate:10,penalty:100,shopMaint:500,shopUnitRate:3}, auth:db.auth, users:db.users.filter(u=>u.role!=='member'), v:3,
              flats:SEED.map(s=>({id:uid(),...s})), bills:[],notices:[],complaints:[],visitors:[],expenses:[] };
       await save(); tab='home'; render(); toast('ડેટા રીસેટ થયો');
     } return;
@@ -1055,42 +1070,64 @@ function formPreview(){
   });
 }
 
-function formGuardPin(){
-  const has = !!db.auth.guardPin;
-  openSheet(`<h3>સિક્યોરિટી PIN</h3>
-    <p class="muted" style="margin:0">વોચમેન આ PIN થી લોગિન કરશે. એને બિલ કે હિસાબ દેખાશે નહીં — ફક્ત મુલાકાતી નોંધ, ડિરેક્ટરી અને નોટિસ.</p>
-    <label><span class="lb">સિક્યોરિટીનું નામ</span><input id="f0" value="${esc(db.auth.guard||'ગેટ સિક્યોરિટી')}"></label>
-    ${has?`<label><span class="lb">એડમિન PIN (ખાતરી માટે)</span><input id="f1" type="password" inputmode="numeric" maxlength="4"></label>`:''}
-    <label><span class="lb">નવો સિક્યોરિટી PIN (૪ આંકડા)</span><input id="f2" type="password" inputmode="numeric" maxlength="4"></label>
-    <label><span class="lb">ફરી લખો</span><input id="f3" type="password" inputmode="numeric" maxlength="4"></label>
+function formAccount(role){
+  const u = role==='admin' ? adminUser() : guardUser();
+  const isA = role==='admin';
+  openSheet(`<h3>${isA?'એડમિન ખાતું':'સિક્યોરિટી ખાતું'}</h3>
+    <p class="muted" style="margin:0">${isA
+      ? 'આ નંબર અને PIN થી એડમિન લોગિન થાય છે. બંને બદલી શકાય.'
+      : 'વોચમેન આ નંબર અને PIN થી લોગિન કરશે. એને બિલ કે હિસાબ દેખાશે નહીં — ફક્ત મુલાકાતી, ડિરેક્ટરી અને નોટિસ.'}</p>
+    <label><span class="lb">નામ</span><input id="f0" value="${esc(u?.name||'')}"></label>
+    <label><span class="lb">લોગિન નંબર</span><input id="f1" type="tel" inputmode="numeric" maxlength="10" value="${esc(u?.phone||'')}"></label>
+    <label><span class="lb">એડમિનનો હાલનો PIN (ખાતરી માટે)</span><input id="f2" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+    <label><span class="lb">નવો PIN (ખાલી રાખો = ન બદલો)</span><input id="f3" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+    <label><span class="lb">નવો PIN ફરી લખો</span><input id="f4" type="password" inputmode="numeric" maxlength="4" placeholder="••••"></label>
+    <p class="muted" style="margin-top:12px">PIN ભૂલી જવાય તો રીસેટ થઈ શકતો નથી — બેકઅપ ફાઇલ સાચવી રાખો.</p>
     <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">સાચવો</button></div>`);
   bind(async ()=>{
-    if(has && $('#f1').value.trim()!==db.auth.pin) return toast('એડમિન PIN ખોટો છે');
-    const p=$('#f2').value.trim();
-    if(!/^\d{4}$/.test(p)) return toast('PIN ૪ આંકડાનો હોવો જોઈએ');
-    if(p!==$('#f3').value.trim()) return toast('બંને PIN સરખા નથી');
-    if(p===db.auth.pin) return toast('એડમિન PIN કરતાં અલગ રાખો');
-    db.auth.guardPin=p; db.auth.guard=$('#f0').value.trim()||'ગેટ સિક્યોરિટી';
-    await save(); closeSheet(); render(); toast('સિક્યોરિટી PIN સચવાયો');
+    if($('#f2').value.trim() !== adminUser().pin) return toast('એડમિનનો હાલનો PIN ખોટો છે');
+    const ph = digits($('#f1').value);
+    if(!ph) return toast('લોગિન નંબર લખો');
+    const clash = db.users.find(x=>x.phone===ph && x.id!==u.id);
+    if(clash) return toast('આ નંબર બીજા ખાતામાં વપરાયેલો છે');
+    const np = $('#f3').value.trim();
+    if(np){
+      if(!/^\d{4}$/.test(np)) return toast('નવો PIN ૪ આંકડાનો હોવો જોઈએ');
+      if(np !== $('#f4').value.trim()) return toast('બંને નવા PIN સરખા નથી');
+      const other = role==='admin' ? guardUser() : adminUser();
+      if(other && other.pin===np && other.phone===ph) return toast('બીજા ખાતા જેવો જ ન રાખો');
+      u.pin = np;
+    }
+    u.phone = ph; u.name = $('#f0').value.trim() || u.name;
+    await save(); closeSheet(); render(); toast('ખાતું અપડેટ થયું');
   });
 }
 
-function formPin(){
-  openSheet(`<h3>એડમિન PIN બદલો</h3>
-    <label><span class="lb">એડમિનનું નામ</span><input id="f0" value="${esc(db.auth.admin)}"></label>
-    <label><span class="lb">જૂનો PIN</span><input id="f1" type="password" inputmode="numeric" maxlength="4"></label>
-    <label><span class="lb">નવો PIN (૪ આંકડા)</span><input id="f2" type="password" inputmode="numeric" maxlength="4"></label>
-    <label><span class="lb">નવો PIN ફરી લખો</span><input id="f3" type="password" inputmode="numeric" maxlength="4"></label>
-    <p class="muted" style="margin-top:12px">PIN ભૂલી જવાય તો રીસેટ થઈ શકતો નથી. બેકઅપ ફાઇલ સાચવી રાખો.</p>
-    <div class="btnrow"><button class="btn ghost" data-x="cancel">રદ કરો</button><button class="btn" id="ok">બદલો</button></div>`);
-  bind(async ()=>{
-    if($('#f1').value.trim()!==db.auth.pin) return toast('જૂનો PIN ખોટો છે');
-    const p=$('#f2').value.trim();
-    if(!/^\d{4}$/.test(p)) return toast('નવો PIN ૪ આંકડાનો હોવો જોઈએ');
-    if(p!==$('#f3').value.trim()) return toast('બંને નવા PIN સરખા નથી');
-    db.auth.pin=p; db.auth.admin=$('#f0').value.trim()||db.auth.admin;
-    await save(); closeSheet(); render(); toast('PIN બદલાયો');
+function formMembers(){
+  const list = memberUsers().slice().sort((a,b)=>{
+    const fa=flatOf(a.flatId)?.no||'', fb=flatOf(b.flatId)?.no||'';
+    return String(fa).localeCompare(String(fb),undefined,{numeric:true});
   });
+  const notYet = db.flats.filter(f=>digits(f.phone) && !db.users.some(u=>u.flatId===f.id)).length;
+  openSheet(`<h3>નોંધાયેલા રહેવાસી · ${list.length}</h3>
+    <p class="muted" style="margin:0">રહેવાસી પોતે સાઇન અપ કરે છે. PIN ભૂલી જાય તો અહીંથી ખાતું કાઢી નાખો —
+      પછી એ ફરી સાઇન અપ કરીને નવો PIN બનાવી શકશે.</p>
+    ${!list.length
+      ? `<div class="empty"><h3>હજી કોઈએ સાઇન અપ કર્યું નથી</h3><p>એડમિન ટૅબમાંથી "સાઇન અપની સૂચના" ગ્રુપમાં મોકલો.</p></div>`
+      : `<div class="card" style="margin-top:12px">${list.map(u=>`<div class="row">
+          <div class="chip">${esc(flatOf(u.flatId)?.no||'—')}</div>
+          <div class="grow"><div class="title">${esc(u.name||flatOf(u.flatId)?.owner||'—')}</div>
+            <div class="meta">${esc(u.phone)}${u.joined?' · '+dateLabel(u.joined):''}</div></div>
+          <button class="btn ghost sm" data-u="${u.id}">કાઢો</button></div>`).join('')}</div>`}
+    ${notYet?`<p class="muted" style="margin-top:12px">${notYet} ફ્લેટ/શોપે હજી સાઇન અપ કર્યું નથી.</p>`:''}
+    <div class="btnrow"><button class="btn ghost full" data-x="cancel">બંધ કરો</button></div>`);
+  $('#sheet').addEventListener('click', async e=>{
+    const b = e.target.closest('[data-u]'); if(!b) return;
+    if(!confirm('આ ખાતું કાઢી નાખવું છે? રહેવાસી ફરી સાઇન અપ કરી શકશે.')) return;
+    db.users = db.users.filter(x=>x.id!==b.dataset.u);
+    await save(); closeSheet(); render(); toast('ખાતું કઢાયું');
+  });
+  const c=$('#sheet [data-x="cancel"]'); if(c) c.addEventListener('click', closeSheet);
 }
 
 function formSettings(){
@@ -1640,9 +1677,11 @@ function restore(){
     r.onload=async()=>{ try{
         const d=JSON.parse(r.result);
         if(!d || !d.flats || !Array.isArray(d.flats)) throw 0;
-        const keepAuth = db.auth;
+        const keepAuth = db.auth, keepUsers = db.users;
         db=Object.assign({society:{name:'Royal Rejoice - 3',address:'',maint:800,unitRate:10,penalty:100,shopMaint:500,shopUnitRate:3},auth:keepAuth,flats:[],bills:[],notices:[],complaints:[],visitors:[],expenses:[]},d);
-        if(!db.auth || !db.auth.pin) db.auth = keepAuth;
+        if(!db.auth) db.auth = keepAuth;
+        if(!Array.isArray(db.users) || !db.users.length) db.users = keepUsers;
+        ensureUsers();
         db.flats.forEach(f=>{ if(!f.id) f.id=uid(); if(!f.kind) f.kind='flat'; });
         db.v = 2;
         await save(); tab='home'; render();
@@ -1665,6 +1704,7 @@ window.RR3 = { get db(){return db}, set db(v){db=v}, get session(){return sessio
   if (saved && saved.flats && saved.flats.length) db = Object.assign(db, saved);
   else db.flats = SEED.map(s=>({id:uid(), ...s}));
   if (!db.auth) db.auth = { pin:'', admin:'' };
+  ensureUsers();
   if (db.society.shopMaint == null) db.society.shopMaint = 500;
   if (db.society.shopUnitRate == null) db.society.shopUnitRate = 3;
   // one-time: add the shops to installs created before shops existed
@@ -1678,7 +1718,8 @@ window.RR3 = { get db(){return db}, set db(v){db=v}, get session(){return sessio
   if (!saved) await save();
 
   const s = await sess.get();
-  if (s && s.role === 'admin' && db.auth.pin) session = s;
+  if (s && s.userId && db.users.some(u=>u.id===s.userId)) session = s;
+  else if (s && s.role === 'admin' && adminUser()) session = s;
   else if (s && s.role === 'member' && flatOf(s.flatId)) session = s;
 
   if (session) render(); else renderGate();
