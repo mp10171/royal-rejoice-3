@@ -1,5 +1,5 @@
 {
-  "version": "v5.3",
-  "note": "Fixes: settings and data now survive every launch",
+  "version": "v5.4",
+  "note": "Move data between devices in one tap",
   "build": "2026-08-23 06:25"
 }
