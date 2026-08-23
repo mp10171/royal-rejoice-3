@@ -1,9 +1,9 @@
 /* Royal Rejoice-3 — offline cache
    NETWORK-FIRST for the app itself, so a new upload always reaches the phone.
    Cache is only a fallback for when there is no internet. */
-const CACHE = 'rr3-v3';
+const CACHE = 'rr3-v5';
 const ASSETS = ['./', './index.html', './manifest.json',
-                './icon-192.png', './icon-512.png', './icon-512-maskable.png'];
+                './icon-192.png', './icon-512.png', './icon-512-maskable.png', './version.json'];
 
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -30,7 +30,9 @@ self.addEventListener('fetch', e => {
   const isApp = req.mode === 'navigate' ||
                 url.pathname.endsWith('/') ||
                 url.pathname.endsWith('index.html') ||
-                url.pathname.endsWith('manifest.json');
+                url.pathname.endsWith('manifest.json') ||
+                url.pathname.endsWith('version.json') ||
+                url.pathname.endsWith('sw.js');
 
   if (isApp) {
     e.respondWith(
