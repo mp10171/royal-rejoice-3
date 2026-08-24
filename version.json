@@ -1,5 +1,5 @@
 {
-  "version": "v6.2",
-  "note": "Names removed from the shared bill PDF",
+  "version": "v6.4",
+  "note": "PDF now opens on phones; payment mode column",
   "build": "2026-08-23 06:25"
 }
